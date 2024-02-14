@@ -1,5 +1,9 @@
-// alt.cpp/include/log.h
 
+/*
+ * Copyright © 2024 Austin Berrio
+ *
+ * alt.cpp/include/log.h
+ */
 #ifndef ALT_LOGGER
 #define ALT_LOGGER
 
