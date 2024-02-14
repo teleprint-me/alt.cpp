@@ -3,7 +3,8 @@
 #ifndef ALT_LOGGER
 #define ALT_LOGGER
 
-#include <stdarg.h> // For variadic function support
+#include <pthread.h> // For including mutex functions
+#include <stdarg.h>  // For variadic function support
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h> // For memory allocation support
@@ -22,8 +23,9 @@ typedef enum {
  * @brief Structure representing a logger object.
  */
 struct Logger {
-    LogLevel level; /**< The logging level of the logger. */
-    FILE*    file;  /**< The file to which log messages are written. */
+    LogLevel        level; /**< The logging level of the logger. */
+    FILE*           file;  /**< The file to which log messages are written. */
+    pthread_mutex_t lock;  /**< Mutually exclude shared resources. */
 };
 
 /**
@@ -46,6 +48,17 @@ struct Logger* new_logger(void) {
     // Set sane default values
     logger->level = LOG_LEVEL_DEBUG;
     logger->file  = NULL;
+
+    // Properly initialize the mutex with pthread_mutex_init
+    int error_code = pthread_mutex_init(&logger->lock, NULL);
+
+    if (0 != error_code) {
+        fprintf(
+            stderr, "Failed to initialize mutex with error: %d\n", error_code
+        );
+        free(logger); // Clean up allocated memory to avoid leaks
+        return NULL;
+    }
 
     return logger;
 }
@@ -82,7 +95,7 @@ struct Logger* create_logger(const char* file_path, LogLevel log_level) {
     }
 
     if (logger->file == NULL) {
-        fprintf(stderr, "[ERROR] Failed to open log file: %s\n", file_path);
+        fprintf(stderr, "Failed to open log file: %s\n", file_path);
         logger->file = stderr; // Fallback to stderr if file opening fails
     }
 
@@ -97,13 +110,25 @@ struct Logger* create_logger(const char* file_path, LogLevel log_level) {
  *
  * @param logger A pointer to the logger instance to be destroyed.
  */
-void close_logger(struct Logger* logger) {
-    if (logger != NULL) {
-        if (logger->file != NULL && logger->file != stderr) {
-            fclose(logger->file);
-        }
-        free(logger);
+bool destroy_logger(struct Logger* logger) {
+    if (logger == NULL) {
+        return false;
     }
+
+    if (logger->file != NULL && logger->file != stderr) {
+        fclose(logger->file);
+    }
+
+    int error_code = pthread_mutex_destroy(&logger->lock);
+
+    if (0 != error_code) {
+        fprintf(stderr, "Failed to destroy mutex with error: %d\n", error_code);
+        return false;
+    }
+
+    free(logger);
+
+    return true;
 }
 
 /**
@@ -123,6 +148,8 @@ void close_logger(struct Logger* logger) {
 bool log_message(
     struct Logger* logger, LogLevel log_level, const char* format, ...
 ) {
+    pthread_mutex_lock(&logger->lock);
+
     if (logger->level < log_level) {
         return false; // Do not log messages below the current log level
     }
@@ -149,6 +176,8 @@ bool log_message(
     va_end(args);
 
     fflush(logger->file); // Ensure the message is written immediately
+
+    pthread_mutex_unlock(&logger->lock);
 
     return true;
 }
