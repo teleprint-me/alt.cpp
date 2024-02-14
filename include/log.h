@@ -21,9 +21,9 @@ struct Logger {
     FILE*    file;
 };
 
-// init_new_logger is a generic "helper" function for dynamically creating
-// new loggers on the fly.
-struct Logger* init_new_logger(void) {
+// new_logger is a generic "helper" function for dynamically creating
+// loggers on the fly.
+struct Logger* new_logger(void) {
     struct Logger* logger = (struct Logger*)malloc(sizeof(struct Logger));
 
     if (logger == NULL) {
@@ -31,33 +31,32 @@ struct Logger* init_new_logger(void) {
         return NULL;
     }
 
-    // Global log level
+    // Set sane default values
     logger->level = LOG_LEVEL_DEBUG;
-    // Global log file
-    logger->file = NULL;
+    logger->file  = NULL;
 
     return logger;
 }
 
 // create_logger is our "constructor" function.
-struct Logger* create_logger(const char* log_file_path, LogLevel log_level) {
-    struct Logger* logger = init_new_logger();
+struct Logger* create_logger(const char* file_path, LogLevel log_level) {
+    struct Logger* logger = new_logger();
 
     if (logger == NULL) {
-        fprintf(stderr, "Failed to allocate memory for logger\n");
         return NULL;
     }
 
     logger->level = log_level;
 
-    if (log_file_path != NULL) {
-        logger->file = fopen(log_file_path, "w");
-        if (logger->file == NULL) {
-            fprintf(stderr, "Failed to open log file: %s\n", log_file_path);
-            logger->file = stderr; // Fallback to stderr if file opening fails
-        }
-    } else {
+    if (file_path == NULL) {
         logger->file = stderr;
+    } else {
+        logger->file = fopen(file_path, "w");
+    }
+
+    if (logger->file == NULL) {
+        fprintf(stderr, "[ERROR] Failed to open log file: %s\n", file_path);
+        logger->file = stderr; // Fallback to stderr if file opening fails
     }
 
     return logger;
