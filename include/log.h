@@ -8,21 +8,33 @@
 #include <stdio.h>
 #include <stdlib.h> // For memory allocation support
 
+/**
+ * @brief Enumeration representing different levels of logging.
+ */
 typedef enum {
-    LOG_LEVEL_DEBUG,
-    LOG_LEVEL_INFO,
-    LOG_LEVEL_WARN,
-    LOG_LEVEL_ERROR
+    LOG_LEVEL_DEBUG, /**< Debug level logging. */
+    LOG_LEVEL_INFO,  /**< Information level logging. */
+    LOG_LEVEL_WARN,  /**< Warning level logging. */
+    LOG_LEVEL_ERROR  /**< Error level logging. */
 } LogLevel;
 
-// Logger is our "class" definition.
+/**
+ * @brief Structure representing a logger object.
+ */
 struct Logger {
-    LogLevel level;
-    FILE*    file;
+    LogLevel level; /**< The logging level of the logger. */
+    FILE*    file;  /**< The file to which log messages are written. */
 };
 
-// new_logger is a generic "helper" function for dynamically creating
-// loggers on the fly.
+/**
+ * @brief Creates a new logger instance.
+ *
+ * This function dynamically allocates memory for a new logger instance
+ * and initializes it with sane default values.
+ *
+ * @return A pointer to the newly created logger instance, or NULL if memory
+ * allocation fails.
+ */
 struct Logger* new_logger(void) {
     struct Logger* logger = (struct Logger*)malloc(sizeof(struct Logger));
 
@@ -38,7 +50,22 @@ struct Logger* new_logger(void) {
     return logger;
 }
 
-// create_logger is our "constructor" function.
+/**
+ * @brief Creates a new logger instance with the specified log file path and log
+ * level.
+ *
+ * This function creates a new logger instance and initializes it with the
+ * specified log level. If a log file path is provided, the logger will attempt
+ * to open the file for writing. If the file opening fails, the logger will fall
+ * back to writing log messages to stderr.
+ *
+ * @param file_path The path to the log file. Pass NULL to log messages to
+ * stderr.
+ * @param log_level The desired log level for the logger.
+ *
+ * @return A pointer to the newly created logger instance, or NULL if memory
+ * allocation fails or if the specified log file cannot be opened.
+ */
 struct Logger* create_logger(const char* file_path, LogLevel log_level) {
     struct Logger* logger = new_logger();
 
@@ -62,7 +89,14 @@ struct Logger* create_logger(const char* file_path, LogLevel log_level) {
     return logger;
 }
 
-// close_logger is our "destructor" function.
+/**
+ * @brief Destroys a logger instance and releases associated resources.
+ *
+ * This function closes the log file associated with the logger, if any,
+ * and frees the memory allocated for the logger instance.
+ *
+ * @param logger A pointer to the logger instance to be destroyed.
+ */
 void close_logger(struct Logger* logger) {
     if (logger != NULL) {
         if (logger->file != NULL && logger->file != stderr) {
@@ -72,8 +106,20 @@ void close_logger(struct Logger* logger) {
     }
 }
 
-// normally, log_message would simply be a method, but is a function in
-// implementation and use to keep up with the theme.
+/**
+ * @brief Logs a message with the specified log level to the logger's file.
+ *
+ * This function logs a message with the specified log level to the logger's
+ * file. If the logger's log level is lower than the specified log level, the
+ * message will not be logged.
+ *
+ * @param logger A pointer to the logger instance to use for logging.
+ * @param log_level The log level of the message to be logged.
+ * @param format The format string of the message to be logged.
+ * @param ... Additional arguments for formatting the message (optional).
+ *
+ * @return true if the message was successfully logged, false otherwise.
+ */
 bool log_message(
     struct Logger* logger, LogLevel log_level, const char* format, ...
 ) {
@@ -107,6 +153,24 @@ bool log_message(
     return true;
 }
 
+/**
+ * @brief Macro for logging messages using a logger instance.
+ *
+ * This macro provides a convenient shorthand for logging messages using a
+ * logger instance. It calls the log_message function with the specified logger,
+ * log level, and message format.
+ *
+ * @param logger A pointer to the logger instance to use for logging.
+ * @param level The log level of the message to be logged.
+ * @param format The format string of the message to be logged.
+ * @param ... Additional arguments for formatting the message (optional).
+ *
+ * Example usage:
+ * @code{.cpp}
+ * LOG(my_logger, LOG_LEVEL_DEBUG, "Debug message: %s\n", "Hello, world!");
+ * @endcode
+ */
 #define LOG(logger, level, format, ...)                                        \
     log_message((logger), (level), (format), ##__VA_ARGS__)
+
 #endif // ALT_LOGGER
