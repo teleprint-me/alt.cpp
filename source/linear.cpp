@@ -2,7 +2,7 @@
 
 double linear(double x, double m, double b) { return m * x + b; }
 
-int main() {
+int linear_example() {
     double x = 3.0;
     double m = 2.0;
     double b = 1.0;
