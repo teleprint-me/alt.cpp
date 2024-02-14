@@ -7,6 +7,9 @@ alt
 /local
 /logs
 
+# ignore automatically generated configuration files
+*.ini
+
 ####################
 # C++ ignore rules #
 ####################
