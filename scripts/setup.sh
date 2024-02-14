@@ -12,8 +12,8 @@ readonly submodule="${PWD}/ggml"
 readonly venv_name=".venv"
 
 # Check if the current directory is the root path
-if [[ "${root_path##*/}" != "phi.cpp" ]]; then
-    echo "Error: You are not in the root path of phi.cpp."
+if [[ "${root_path##*/}" != "alt.cpp" ]]; then
+    echo "Error: You are not in the root path of alt.cpp."
     exit 1
 fi
 
