@@ -7,7 +7,7 @@ CFLAGS = -Wall -O2
 CXXFLAGS = -Wall -Wextra -std=c++17 -I./imgui -I./imgui/backends
 
 # Linker flags
-LDFLAGS = -lglfw -lGLEW -lGL -lvulkan
+LDFLAGS = -lpthread -lglfw -lGLEW -lGL -lvulkan
 
 # Target executable name
 EXECUTABLE = alt  # alt is the name of the application
