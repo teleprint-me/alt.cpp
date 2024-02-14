@@ -4,6 +4,7 @@
 #define ALT_LOGGER
 
 #include <stdarg.h> // For variadic function support
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h> // For memory allocation support
 
@@ -14,66 +15,97 @@ typedef enum {
     LOG_LEVEL_ERROR
 } LogLevel;
 
+// Logger is our "class" definition.
 struct Logger {
     LogLevel level;
     FILE*    file;
 };
 
-struct Logger create_logger(const char* log_file_path, LogLevel log_level) {
-    struct Logger logger;
+// init_new_logger is a generic "helper" function for dynamically creating
+// new loggers on the fly.
+struct Logger* init_new_logger(void) {
+    struct Logger* logger = (struct Logger*)malloc(sizeof(struct Logger));
 
-    logger.level = log_level;
+    if (logger == NULL) {
+        fprintf(stderr, "Failed to allocate memory for logger\n");
+        return NULL;
+    }
+
+    // Global log level
+    logger->level = LOG_LEVEL_DEBUG;
+    // Global log file
+    logger->file = NULL;
+
+    return logger;
+}
+
+// create_logger is our "constructor" function.
+struct Logger* create_logger(const char* log_file_path, LogLevel log_level) {
+    struct Logger* logger = init_new_logger();
+
+    if (logger == NULL) {
+        fprintf(stderr, "Failed to allocate memory for logger\n");
+        return NULL;
+    }
+
+    logger->level = log_level;
 
     if (log_file_path != NULL) {
-        logger.file = fopen(log_file_path, "w");
-
-        if (logger.file == NULL) {
+        logger->file = fopen(log_file_path, "w");
+        if (logger->file == NULL) {
             fprintf(stderr, "Failed to open log file: %s\n", log_file_path);
-            logger.file = stderr; // Fallback to stderr if file opening fails
+            logger->file = stderr; // Fallback to stderr if file opening fails
         }
     } else {
-        logger.file = stderr;
+        logger->file = stderr;
     }
 
     return logger;
 }
 
-void close_logger(struct Logger logger) {
-    if (logger.file != NULL && logger.file != stderr) {
-        fclose(logger.file);
+// close_logger is our "destructor" function.
+void close_logger(struct Logger* logger) {
+    if (logger != NULL) {
+        if (logger->file != NULL && logger->file != stderr) {
+            fclose(logger->file);
+        }
+        free(logger);
     }
-    logger.file = NULL;
 }
 
-void log_message(
-    struct Logger logger, LogLevel log_level, const char* format, ...
+// normally, log_message would simply be a method, but is a function in
+// implementation and use to keep up with the theme.
+bool log_message(
+    struct Logger* logger, LogLevel log_level, const char* format, ...
 ) {
-    if (logger.level < log_level) {
-        return; // Do not log messages below the current log level
+    if (logger->level < log_level) {
+        return false; // Do not log messages below the current log level
     }
 
     // Prefix log messages based on the level
-    switch (logger.level) {
+    switch (log_level) {
         case LOG_LEVEL_DEBUG:
-            fprintf(logger.file, "[DEBUG] ");
+            fprintf(logger->file, "[DEBUG] ");
             break;
         case LOG_LEVEL_INFO:
-            fprintf(logger.file, "[INFO] ");
+            fprintf(logger->file, "[INFO] ");
             break;
         case LOG_LEVEL_WARN:
-            fprintf(logger.file, "[WARN] ");
+            fprintf(logger->file, "[WARN] ");
             break;
         case LOG_LEVEL_ERROR:
-            fprintf(logger.file, "[ERROR] ");
+            fprintf(logger->file, "[ERROR] ");
             break;
     }
 
     va_list args;
     va_start(args, format);
-    vfprintf(logger.file, format, args);
+    vfprintf(logger->file, format, args);
     va_end(args);
 
-    fflush(logger.file); // Ensure the message is written immediately
+    fflush(logger->file); // Ensure the message is written immediately
+
+    return true;
 }
 
 #define LOG(logger, level, format, ...)                                        \
