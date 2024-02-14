@@ -21,8 +21,9 @@ IMGUI = imgui/imgui.cpp \
 	imgui/imgui_widgets.cpp \
 	imgui/imgui_tables.cpp
 
-ALT = source/alt.cpp source/main.cpp
-SOURCES = $(CPP_SOURCES)
+ALT = source/linear.cpp source/alt.cpp
+
+SOURCES = $(IMGUI) $(ALT)
 
 # Explicit object files
 OBJECTS = \
@@ -32,8 +33,8 @@ OBJECTS = \
 	imgui/imgui_draw.o \
 	imgui/imgui_widgets.o \
 	imgui/imgui_tables.o \
-	source/alt.o \
-	source/main.o
+	source/linear.o \
+	source/alt.o
 
 # Build the executable
 all: $(EXECUTABLE)
@@ -41,10 +42,7 @@ all: $(EXECUTABLE)
 $(EXECUTABLE): $(OBJECTS)
 	$(CXX) $^ -o $@ $(LDFLAGS)
 
-# Compilation rules for C++ source files
-source/alt.o: source/alt.cpp
-	$(CXX) $(CXXFLAGS) -c $< -o $@
-
+# Build ImGUI
 imgui/imgui.o: imgui/imgui.cpp
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
@@ -63,9 +61,13 @@ imgui/imgui_widgets.o: imgui/imgui_widgets.cpp
 imgui/imgui_tables.o: imgui/imgui_tables.cpp
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
-# Compilation rule for C source file
-source/main.o: source/main.cpp
-	$(CC) $(CFLAGS) -c $< -o $@
+# Build Alt
+source/linear.o: source/linear.cpp
+	$(CXX) $(CXXFLAGS) -c $< -o $@
+
+# `alt` is the "main" binary
+source/alt.o: source/alt.cpp
+	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 # Phony targets for cleanliness and maintenance
 .PHONY: clean submodules
