@@ -62,7 +62,7 @@ InsertBraces: true
 InsertNewlineAtEOF: true
 
 # Line width and wrapping
-ColumnLimit: 80
+ColumnLimit: 100
 
 # Commented out options (for version compatibility or preference)
 # BracedInitializerIndentWidth: 4  # Requires clang-format version 17 or higher
