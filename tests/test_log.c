@@ -1,28 +1,26 @@
 /*
  * alt.cpp/tests/test_log.c
  *
- * NOTES:
- *   Build:
- *     gcc -o test_log tests/test_log.c -lpthread
- *   Run:
- *     ./test_log
- *   Expected output:
- *     [DEBUG] Debug message
- *     [INFO] Info message
- *     [WARN] Warning message
- *     [ERROR] Error message
- *     [WARN] This is a warning message
- *     Finished tests!
- *   Run: cat test.log
- *   Expected output:
- *     [DEBUG] Logging to a file: 1, 2, 3... Done!
+ * Build:
+ *   gcc -o test_log tests/test_log.c -lpthread
+ * Run:
+ *   ./test_log
+ * Expected output:
+ *   [DEBUG] Debug message
+ *   [INFO] Info message
+ *   [WARN] Warning message
+ *   [ERROR] Error message
+ *   [WARN] This is a warning message
+ *   Finished tests!
+ * Run: cat test.log
+ * Expected output:
+ *   [DEBUG] Logging to a file: 1, 2, 3... Done!
  */
 #include "../include/log.h"
 
 int main(void) {
-    const char* file_path = "test.log";
-
     // Test logging to a file
+    const char*    file_path   = "test.log";
     struct Logger* file_logger = create_logger(LOG_LEVEL_DEBUG, LOG_TYPE_FILE, file_path);
     LOG(file_logger, LOG_LEVEL_DEBUG, "Logging to a file: 1, 2, %d... Done!\n", 3);
 
