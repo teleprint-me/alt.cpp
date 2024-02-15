@@ -1,5 +1,21 @@
 /*
  * alt.cpp/tests/test_log.c
+ *
+ * NOTES:
+ *   Build:
+ *     gcc -o test_log tests/test_log.c -lpthread
+ *   Run:
+ *     ./test_log
+ *   Expected output:
+ *     [DEBUG] Debug message
+ *     [INFO] Info message
+ *     [WARN] Warning message
+ *     [ERROR] Error message
+ *     [WARN] This is a warning message
+ *     Finished tests!
+ *   Run: cat test.log
+ *   Expected output:
+ *     [DEBUG] Logging to a file: 1, 2, 3... Done!
  */
 #include "../include/log.h"
 
