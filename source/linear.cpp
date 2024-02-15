@@ -1,3 +1,8 @@
+/*
+ * alt.cpp/source/linear.cpp
+ *
+ * Copyright © 2024 Austin Berrio
+ */
 #include <stdio.h>
 
 double linear(double x, double m, double b) { return m * x + b; }
