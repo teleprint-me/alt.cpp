@@ -256,11 +256,13 @@ bool destroy_logger(struct Logger* logger) {
  * @return true if the message was successfully logged, false otherwise.
  */
 bool log_message(struct Logger* logger, LogLevel log_level, const char* format, ...) {
-    pthread_mutex_lock(&logger->thread_lock);
-
-    if (logger->log_level < log_level) {
+    // block if and only if the logger->log_level is greater than the specified log_level
+    if (logger->log_level > log_level) {
         return false; // Do not log messages below the current log level
     }
+
+    // Only lock the thread if log_level is valid!
+    pthread_mutex_lock(&logger->thread_lock);
 
     // Prefix log messages based on the level
     switch (log_level) {
