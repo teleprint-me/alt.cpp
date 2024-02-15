@@ -1,6 +1,8 @@
 /*
  * alt.cpp/tests/test_log.c
  *
+ * Copyright © 2024 Austin Berrio
+ *
  * Build:
  *   gcc -o test_log tests/test_log.c -lpthread
  * Run:
