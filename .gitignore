@@ -2,6 +2,9 @@
 main
 alt
 
+# ignore local test binaries
+test_*
+
 # ignore local paths
 /build
 /local
