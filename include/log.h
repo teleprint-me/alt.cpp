@@ -32,7 +32,7 @@ typedef enum {
     LOG_TYPE_FILE     /**< Log to a file. */
 } LogType;
 
-char* LogTypeName[] = {"unknown", "stream", "file"};
+const char* LogTypeName[] = {"unknown", "stream", "file"};
 
 /**
  * @brief Structure representing a logger object.
