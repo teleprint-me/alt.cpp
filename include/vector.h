@@ -35,13 +35,30 @@ bool           vector_destroy(struct Vector* vector);
 // Vector mathematical operations
 float          vector_magnitude(const struct Vector* vector);
 struct Vector* vector_normalize(struct Vector* vector, bool inplace, struct Logger* logger);
+
+// Helper functions for element-wise operations
+float add(float x, float y);
+float subtract(float x, float y);
+float multiply(float x, float y);
+float divide(float x, float y);
+
+// Element wise operations
+struct Vector* perform_elementwise_operation(
+    const struct Vector* a,
+    const struct Vector* b,
+    struct Logger*       logger,
+    float (*operation)(float, float) // pass function by value
+);
+
 struct Vector* vector_add(const struct Vector* a, const struct Vector* b, struct Logger* logger);
 struct Vector*
 vector_subtract(const struct Vector* a, const struct Vector* b, struct Logger* logger);
 struct Vector*
 vector_multiply(const struct Vector* a, const struct Vector* b, struct Logger* logger);
 struct Vector* vector_divide(const struct Vector* a, const struct Vector* b, struct Logger* logger);
-float          vector_dot_product(const struct Vector* a, const struct Vector* b);
+
+// Calculate vector products
+float vector_dot_product(const struct Vector* a, const struct Vector* b);
 struct Vector*
 vector_cross_product(const struct Vector* a, const struct Vector* b, struct Logger* logger);
 

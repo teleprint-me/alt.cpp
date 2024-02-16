@@ -121,11 +121,39 @@ struct Vector* vector_normalize(struct Vector* vector, bool inplace, struct Logg
     return unit;
 }
 
-struct Vector* vector_add(struct Vector* a, struct Vector* b, struct Logger* logger) {
+// Helper function for element-wise operations
+float add(float x, float y) {
+    return x + y;
+}
+
+float subtract(float x, float y) {
+    return x - y;
+}
+
+float multiply(float x, float y) {
+    return x * y;
+}
+
+float divide(float x, float y) {
+    if (y == 0) {
+        // Handle division by zero error
+        return 0;
+    }
+    return x / y;
+}
+
+// Function to perform element-wise operation on two vectors
+struct Vector* perform_elementwise_operation(
+    const struct Vector* a,
+    const struct Vector* b,
+    struct Logger*       logger,
+    float (*operation)(float, float)
+) {
     if (a->size != b->size) {
         LOG(logger,
             LOG_LEVEL_ERROR,
-            "Vector dimensions do not match. Cannot add vectors of size %zu and %zu.\n",
+            "Vector dimensions do not match. Cannot perform operation on vectors of size %zu and "
+            "%zu.\n",
             a->size,
             b->size);
         return NULL;
@@ -137,89 +165,31 @@ struct Vector* vector_add(struct Vector* a, struct Vector* b, struct Logger* log
         return NULL;
     }
 
-    // element-wise addition
+    // Perform element-wise operation
     for (size_t i = 0; i < a->size; i++) {
-        c->elements[i] = a->elements[i] + b->elements[i];
+        c->elements[i] = operation(a->elements[i], b->elements[i]);
     }
 
     return c;
 }
 
+// Updated functions using the new helper function
+struct Vector* vector_add(struct Vector* a, struct Vector* b, struct Logger* logger) {
+    return perform_elementwise_operation(a, b, logger, add);
+}
+
 struct Vector* vector_subtract(struct Vector* a, struct Vector* b, struct Logger* logger) {
-    if (a->size != b->size) {
-        LOG(logger,
-            LOG_LEVEL_ERROR,
-            "Vector dimensions do not match. Cannot subtract vectors of size %zu and %zu.\n",
-            a->size,
-            b->size);
-        return NULL;
-    }
-
-    struct Vector* c = vector_create(a->size);
-    if (NULL == c) {
-        LOG(logger, LOG_LEVEL_ERROR, "Failed to allocate memory for the resultant vector.\n");
-        return NULL;
-    }
-
-    // element-wise subtraction
-    for (size_t i = 0; i < a->size; i++) {
-        c->elements[i] = a->elements[i] - b->elements[i];
-    }
-
-    return c;
+    return perform_elementwise_operation(a, b, logger, subtract);
 }
 
 struct Vector*
 vector_multiply(const struct Vector* a, const struct Vector* b, struct Logger* logger) {
-    if (a->size != b->size) {
-        LOG(logger,
-            LOG_LEVEL_ERROR,
-            "Vector dimensions do not match. Cannot multiply vectors of size %zu and %zu.\n",
-            a->size,
-            b->size);
-        return NULL;
-    }
-
-    struct Vector* c = vector_create(a->size);
-    if (NULL == c) {
-        LOG(logger, LOG_LEVEL_ERROR, "Failed to allocate memory for the resultant vector.\n");
-        return NULL;
-    }
-
-    // element-wise subtraction
-    for (size_t i = 0; i < a->size; i++) {
-        c->elements[i] = a->elements[i] * b->elements[i];
-    }
-
-    return c;
+    return perform_elementwise_operation(a, b, logger, multiply);
 }
 
 struct Vector*
 vector_divide(const struct Vector* a, const struct Vector* b, struct Logger* logger) {
-    if (a->size != b->size) {
-        LOG(logger,
-            LOG_LEVEL_ERROR,
-            "Vector dimensions do not match. Cannot divide vectors of size %zu and %zu.\n",
-            a->size,
-            b->size);
-        return NULL;
-    }
-
-    struct Vector* c = vector_create(a->size);
-    if (NULL == c) {
-        LOG(logger, LOG_LEVEL_ERROR, "Failed to allocate memory for the resultant vector.\n");
-        return NULL;
-    }
-
-    // element-wise subtraction
-    for (size_t i = 0; i < a->size; i++) {
-        if (0 == b->elements[i]) {
-            continue; // prevent division by zero
-        }
-        c->elements[i] = a->elements[i] / b->elements[i];
-    }
-
-    return c;
+    return perform_elementwise_operation(a, b, logger, divide);
 }
 
 float vector_dot_product(const struct Vector* a, const struct Vector* b) {}
