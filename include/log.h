@@ -124,7 +124,7 @@ bool set_logger_file_path_and_stream(struct Logger* logger, const char* file_pat
  * @return A pointer to the newly created logger instance, or NULL if memory
  * allocation fails or if the logger type is invalid.
  */
-struct Logger* new_logger(LogType log_type) {
+struct Logger* logger_new(LogType log_type) {
     // Allocate memory for the logger instance
     struct Logger* logger = (struct Logger*)malloc(sizeof(struct Logger));
 
@@ -175,9 +175,9 @@ struct Logger* new_logger(LogType log_type) {
  * @return A pointer to the newly created logger instance, or NULL if memory
  * allocation fails or if the specified log file cannot be opened.
  */
-struct Logger* create_logger(LogLevel log_level, LogType log_type, const char* file_path) {
+struct Logger* logger_create(LogLevel log_level, LogType log_type, const char* file_path) {
     // Create a new logger instance
-    struct Logger* logger = new_logger(log_type);
+    struct Logger* logger = logger_new(log_type);
     if (logger == NULL) {
         return NULL;
     }
@@ -216,7 +216,7 @@ struct Logger* create_logger(LogLevel log_level, LogType log_type, const char* f
  * @param logger A pointer to the logger instance to be destroyed.
  * @return True if the logger was successfully destroyed, false otherwise.
  */
-bool destroy_logger(struct Logger* logger) {
+bool logger_destroy(struct Logger* logger) {
     if (NULL == logger) {
         return false;
     }
@@ -255,7 +255,7 @@ bool destroy_logger(struct Logger* logger) {
  *
  * @return true if the message was successfully logged, false otherwise.
  */
-bool log_message(struct Logger* logger, LogLevel log_level, const char* format, ...) {
+bool logger_message(struct Logger* logger, LogLevel log_level, const char* format, ...) {
     // block if and only if the logger->log_level is greater than the specified log_level
     if (logger->log_level > log_level) {
         return false; // Do not log messages below the current log level
@@ -296,7 +296,7 @@ bool log_message(struct Logger* logger, LogLevel log_level, const char* format, 
  * @brief Macro for logging messages using a logger instance.
  *
  * This macro provides a convenient shorthand for logging messages using a
- * logger instance. It calls the log_message function with the specified logger,
+ * logger instance. It calls the logger_message function with the specified logger,
  * log level, and message format.
  *
  * @param logger A pointer to the logger instance to use for logging.
@@ -309,6 +309,6 @@ bool log_message(struct Logger* logger, LogLevel log_level, const char* format, 
  * LOG(my_logger, LOG_LEVEL_DEBUG, "Debug message: %s\n", "Hello, world!");
  * @endcode
  */
-#define LOG(logger, log_level, format, ...) log_message(logger, log_level, format, ##__VA_ARGS__)
+#define LOG(logger, log_level, format, ...) logger_message(logger, log_level, format, ##__VA_ARGS__)
 
 #endif // ALT_LOGGER
