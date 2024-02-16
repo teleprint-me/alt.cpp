@@ -223,6 +223,8 @@ bool logger_message(struct Logger* logger, log_level_t log_level, const char* fo
         return false; // Do not log messages below the current logger->log_level
     }
 
+    int err = errno; // Capture errno at the start of the function to avoid changes
+
     // Apply lazy initialization for global logger
     if (NULL == logger->file_stream) {
         logger->file_stream = stderr;
@@ -241,10 +243,18 @@ bool logger_message(struct Logger* logger, log_level_t log_level, const char* fo
             fprintf(logger->file_stream, "[INFO] ");
             break;
         case LOG_LEVEL_WARN:
-            fprintf(logger->file_stream, "[WARN] ");
+            if (err != 0) {
+                fprintf(logger->file_stream, "[WARN:%s] ", strerror(err));
+            } else {
+                fprintf(logger->file_stream, "[WARN] ");
+            }
             break;
         case LOG_LEVEL_ERROR:
-            fprintf(logger->file_stream, "[ERROR] ");
+            if (err != 0) {
+                fprintf(logger->file_stream, "[ERROR:%s] ", strerror(err));
+            } else {
+                fprintf(logger->file_stream, "[ERROR] ");
+            }
             break;
     }
 

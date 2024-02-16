@@ -7,11 +7,13 @@
 #ifndef ALT_LOGGER_H
 #define ALT_LOGGER_H
 
+#include <errno.h>
 #include <pthread.h> // For including mutex functions
 #include <stdarg.h>  // For variadic function support
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h> // For memory allocation support
+#include <string.h> // Include for strerror declaration
 
 /**
  * @brief Enumeration representing different levels of logging.
@@ -152,7 +154,8 @@ bool logger_message(struct Logger* logger, log_level_t log_level, const char* fo
  * LOG(my_logger, LOG_LEVEL_DEBUG, "Debug message: %s\n", "Hello, world!");
  * @endcode
  */
-#define LOG(logger, log_level, format, ...) logger_message(logger, log_level, format, ##__VA_ARGS__)
+#define LOG(logger, level, format, ...) \
+    logger_message((logger), (level), "[%s:%d] " format, __FILE__, __LINE__, ##__VA_ARGS__)
 
 /**
  * @brief Global Logger Object
