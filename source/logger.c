@@ -19,7 +19,7 @@ const char* LogTypeName[] = {"unknown", "stream", "file"};
  *
  * @return True if the type and name were set successfully, false otherwise.
  */
-bool set_logger_type_and_name(struct Logger* logger, LogType log_type) {
+bool set_logger_type_and_name(struct Logger* logger, log_type_t log_type) {
     // Set logger type based on provided logger type
     switch (log_type) {
         case LOG_TYPE_UNKNOWN:
@@ -86,7 +86,7 @@ bool set_logger_file_path_and_stream(struct Logger* logger, const char* file_pat
  * @return A pointer to the newly created logger instance, or NULL if memory
  * allocation fails or if the logger type is invalid.
  */
-struct Logger* logger_new(LogType log_type) {
+struct Logger* logger_new(log_type_t log_type) {
     // Allocate memory for the logger instance
     struct Logger* logger = (struct Logger*) malloc(sizeof(struct Logger));
 
@@ -137,7 +137,7 @@ struct Logger* logger_new(LogType log_type) {
  * @return A pointer to the newly created logger instance, or NULL if memory
  * allocation fails or if the specified log file cannot be opened.
  */
-struct Logger* logger_create(LogLevel log_level, LogType log_type, const char* file_path) {
+struct Logger* logger_create(log_level_t log_level, log_type_t log_type, const char* file_path) {
     // Create a new logger instance
     struct Logger* logger = logger_new(log_type);
     if (logger == NULL) {
@@ -217,10 +217,10 @@ bool logger_destroy(struct Logger* logger) {
  *
  * @return true if the message was successfully logged, false otherwise.
  */
-bool logger_message(struct Logger* logger, LogLevel log_level, const char* format, ...) {
-    // block if and only if the logger->log_level is greater than the specified log_level
-    if (logger->log_level > log_level) {
-        return false; // Do not log messages below the current log level
+bool logger_message(struct Logger* logger, log_level_t log_level, const char* format, ...) {
+    // block if and only if the log_level is less than the logger->log_level
+    if (log_level < logger->log_level) {
+        return false; // Do not log messages below the current logger->log_level
     }
 
     // Only lock the thread if log_level is valid!
@@ -253,3 +253,38 @@ bool logger_message(struct Logger* logger, LogLevel log_level, const char* forma
 
     return true;
 }
+
+/**
+ * @brief Global Logger Object
+ *
+ * The global logger object provides a centralized logging mechanism for the program.
+ * It is statically initialized with default values and can be accessed from any part
+ * of the program to log messages at various log levels. The logger ensures thread-safe
+ * logging through the use of a mutex.
+ *
+ * @note The global logger object should not be reinitialized or modified after its
+ * creation, as this could lead to undefined behavior. Additionally, explicitly
+ * destroying the mutex associated with the logger is not strictly necessary but
+ * can be considered good practice, especially in environments where resources
+ * are checked meticulously at program exit.
+ *
+ * @var global_logger
+ * The global logger object has the following attributes:
+ * - log_level: The logging level of the logger.
+ * - log_type: The type of logger.
+ * - log_type_name: The name associated with the logger type.
+ * - file_stream: The file stream for writing log messages.
+ * - file_path: The path to the log file.
+ * - thread_lock: Mutex to ensure thread-safe logging.
+ *
+ * @warning Modifying the global logger object or attempting to reinitialize
+ * the mutex after initialization can lead to undefined behavior.
+ */
+struct Logger global_logger = {
+    LOG_LEVEL_DEBUG,          /**< Logging level */
+    LOG_TYPE_STREAM,          /**< Logger type */
+    "stream",                 /**< Logger type name */
+    NULL,                     /**< File stream */
+    NULL,                     /**< File path */
+    PTHREAD_MUTEX_INITIALIZER /**< Mutex for thread safety */
+};
