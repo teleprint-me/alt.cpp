@@ -137,15 +137,18 @@ float multiply(float x, float y) {
 }
 
 float divide(float x, float y) {
-    // NOTE: Consider using NAN or LOG or both here.
-    if (y == 0) { // It is possible and valid for y to be zero.
+    if (y == 0) {
+        // Log a warning about division by zero to inform the user.
         LOG(&global_logger,
             LOG_LEVEL_WARN,
-            "Vector with x (%f) and y (%f) yielded division by zero.\n",
+            "Attempted division by zero with x (%f) and y (%f). Returning default value 0.\n",
             x,
             y);
-        return 0; // Handle division by zero error.
-    }             // Another possible return value is 1 (identity).
+        // Return 0 as a default value to avoid division by zero while signaling the error.
+        // This choice is documented and intentional to prevent `NaN` in vector calculations,
+        // ensuring vectors remain valid for subsequent operations.
+        return 0;
+    }
     return x / y;
 }
 
