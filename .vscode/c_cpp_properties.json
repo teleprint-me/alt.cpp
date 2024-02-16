@@ -5,6 +5,7 @@
       "includePath": [
         "${workspaceFolder}/imgui",
         "${workspaceFolder}/imgui/backends",
+        "${workspaceFolder}/implot",
         "${workspaceFolder}/include",
         "${workspaceFolder}/source"
       ],
