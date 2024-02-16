@@ -6,6 +6,8 @@
 
 #include "../include/logger.h"
 
+const char* LogTypeName[] = {"unknown", "stream", "file"};
+
 /**
  * @brief Sets the logger type and name.
  *

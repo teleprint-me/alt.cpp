@@ -32,8 +32,6 @@ typedef enum {
     LOG_TYPE_FILE     /**< Log to a file. */
 } LogType;
 
-const char* LogTypeName[] = {"unknown", "stream", "file"};
-
 /**
  * @brief Structure representing a logger object.
  */
@@ -57,23 +55,7 @@ struct Logger {
  *
  * @return True if the type and name were set successfully, false otherwise.
  */
-bool set_logger_type_and_name(struct Logger* logger, LogType log_type) {
-    // Set logger type based on provided logger type
-    switch (log_type) {
-        case LOG_TYPE_UNKNOWN:
-        case LOG_TYPE_STREAM:
-            logger->log_type      = LOG_TYPE_STREAM;
-            logger->log_type_name = LogTypeName[LOG_TYPE_STREAM];
-            return true;
-        case LOG_TYPE_FILE:
-            logger->log_type      = LOG_TYPE_FILE;
-            logger->log_type_name = LogTypeName[LOG_TYPE_FILE];
-            return true;
-        default:
-            fprintf(stderr, "Invalid logger type\n");
-            return false;
-    }
-}
+bool set_logger_type_and_name(struct Logger* logger, LogType log_type);
 
 /**
  * @brief Sets the file path and stream for the logger.
@@ -92,26 +74,7 @@ bool set_logger_type_and_name(struct Logger* logger, LogType log_type) {
  *
  * @return True if the file path was set successfully, false otherwise.
  */
-bool set_logger_file_path_and_stream(struct Logger* logger, const char* file_path) {
-    if (file_path == NULL) {
-        // set the logger type to stream upon failure.
-        set_logger_type_and_name(logger, LOG_TYPE_STREAM);
-        logger->file_stream = stderr;
-        return false; // File path is NULL (user error)
-    }
-
-    logger->file_stream = fopen(file_path, "w");
-    if (logger->file_stream == NULL) {
-        // set the logger type to stream upon failure.
-        set_logger_type_and_name(logger, LOG_TYPE_STREAM);
-        logger->file_stream = stderr;
-        return false; // Failed to open file (unexpected condition)
-    }
-
-    // File path set successfully
-    logger->file_path = file_path;
-    return true;
-}
+bool set_logger_file_path_and_stream(struct Logger* logger, const char* file_path);
 
 /**
  * @brief Creates a new logger instance.
@@ -124,39 +87,7 @@ bool set_logger_file_path_and_stream(struct Logger* logger, const char* file_pat
  * @return A pointer to the newly created logger instance, or NULL if memory
  * allocation fails or if the logger type is invalid.
  */
-struct Logger* logger_new(LogType log_type) {
-    // Allocate memory for the logger instance
-    struct Logger* logger = (struct Logger*) malloc(sizeof(struct Logger));
-
-    // Check if memory allocation was successful
-    if (NULL == logger) {
-        fprintf(stderr, "Failed to allocate memory for logger\n");
-        return NULL;
-    }
-
-    // Set default values for the logger
-    logger->log_level = LOG_LEVEL_DEBUG;
-
-    // Set logger type and name
-    if (!set_logger_type_and_name(logger, log_type)) {
-        fprintf(stderr, "Failed to initialize logger with type: %d\n", log_type);
-        free(logger); // Clean up allocated memory to avoid memory leaks
-        return NULL;
-    }
-
-    logger->file_path   = NULL;
-    logger->file_stream = NULL;
-
-    // Initialize the mutex for thread safety
-    int error_code = pthread_mutex_init(&logger->thread_lock, NULL);
-    if (0 != error_code) {
-        fprintf(stderr, "Failed to initialize mutex with error: %d\n", error_code);
-        free(logger); // Clean up allocated memory to avoid memory leaks
-        return NULL;
-    }
-
-    return logger; // Return the created logger instance
-}
+struct Logger* logger_new(LogType log_type);
 
 /**
  * @brief Creates a new logger instance with the specified log file path and log
@@ -175,37 +106,7 @@ struct Logger* logger_new(LogType log_type) {
  * @return A pointer to the newly created logger instance, or NULL if memory
  * allocation fails or if the specified log file cannot be opened.
  */
-struct Logger* logger_create(LogLevel log_level, LogType log_type, const char* file_path) {
-    // Create a new logger instance
-    struct Logger* logger = logger_new(log_type);
-    if (logger == NULL) {
-        return NULL;
-    }
-
-    // Set the log level
-    logger->log_level = log_level;
-
-    // Set the file path and stream based on the logger type
-    switch (log_type) {
-        case LOG_TYPE_UNKNOWN:
-        case LOG_TYPE_STREAM:
-            // Use stdout or stderr directly
-            logger->file_stream = stderr;
-            break;
-        case LOG_TYPE_FILE:
-            if (!set_logger_file_path_and_stream(logger, file_path)) {
-                fprintf(stderr, "Failed to set log file path. Fallback to stderr.\n");
-            }
-            break;
-        default:
-            // Unknown logger type; fallback to stderr
-            fprintf(stderr, "Unknown logger type. Fallback to stderr.\n");
-            logger->file_stream = stderr;
-            break;
-    }
-
-    return logger;
-}
+struct Logger* logger_create(LogLevel log_level, LogType log_type, const char* file_path);
 
 /**
  * @brief Destroys a logger instance and releases associated resources.
@@ -216,30 +117,7 @@ struct Logger* logger_create(LogLevel log_level, LogType log_type, const char* f
  * @param logger A pointer to the logger instance to be destroyed.
  * @return True if the logger was successfully destroyed, false otherwise.
  */
-bool logger_destroy(struct Logger* logger) {
-    if (NULL == logger) {
-        return false;
-    }
-
-    // Close the log file if it's a file logger
-    if (LOG_TYPE_FILE == logger->log_type && NULL != logger->file_stream) {
-        if (fclose(logger->file_stream) != 0) {
-            fprintf(stderr, "Failed to close log file: %s\n", logger->file_path);
-            return false; // return false to prevent dangling pointers
-        }
-    }
-
-    // Destroy the mutex
-    int mutex_error = pthread_mutex_destroy(&logger->thread_lock);
-    if (0 != mutex_error) {
-        fprintf(stderr, "Failed to destroy mutex with error: %d\n", mutex_error);
-        return false; // return false to prevent dangling pointers
-    }
-
-    // Free memory for the logger instance
-    free(logger);
-    return true;
-}
+bool logger_destroy(struct Logger* logger);
 
 /**
  * @brief Logs a message with the specified log level to the logger's file.
@@ -255,42 +133,7 @@ bool logger_destroy(struct Logger* logger) {
  *
  * @return true if the message was successfully logged, false otherwise.
  */
-bool logger_message(struct Logger* logger, LogLevel log_level, const char* format, ...) {
-    // block if and only if the logger->log_level is greater than the specified log_level
-    if (logger->log_level > log_level) {
-        return false; // Do not log messages below the current log level
-    }
-
-    // Only lock the thread if log_level is valid!
-    pthread_mutex_lock(&logger->thread_lock);
-
-    // Prefix log messages based on the level
-    switch (log_level) {
-        case LOG_LEVEL_DEBUG:
-            fprintf(logger->file_stream, "[DEBUG] ");
-            break;
-        case LOG_LEVEL_INFO:
-            fprintf(logger->file_stream, "[INFO] ");
-            break;
-        case LOG_LEVEL_WARN:
-            fprintf(logger->file_stream, "[WARN] ");
-            break;
-        case LOG_LEVEL_ERROR:
-            fprintf(logger->file_stream, "[ERROR] ");
-            break;
-    }
-
-    va_list args;
-    va_start(args, format);
-    vfprintf(logger->file_stream, format, args);
-    va_end(args);
-
-    fflush(logger->file_stream); // Ensure the message is written immediately
-
-    pthread_mutex_unlock(&logger->thread_lock);
-
-    return true;
-}
+bool logger_message(struct Logger* logger, LogLevel log_level, const char* format, ...);
 
 /**
  * @brief Macro for logging messages using a logger instance.
