@@ -1,11 +1,11 @@
 /*
- * alt.cpp/include/log.h
+ * alt.cpp/include/logger.h
  *
  * Copyright © 2024 Austin Berrio
  */
 
-#ifndef ALT_LOGGER
-#define ALT_LOGGER
+#ifndef ALT_LOGGER_H
+#define ALT_LOGGER_H
 
 #include <pthread.h> // For including mutex functions
 #include <stdarg.h>  // For variadic function support
@@ -126,7 +126,7 @@ bool set_logger_file_path_and_stream(struct Logger* logger, const char* file_pat
  */
 struct Logger* logger_new(LogType log_type) {
     // Allocate memory for the logger instance
-    struct Logger* logger = (struct Logger*)malloc(sizeof(struct Logger));
+    struct Logger* logger = (struct Logger*) malloc(sizeof(struct Logger));
 
     // Check if memory allocation was successful
     if (NULL == logger) {
@@ -311,4 +311,4 @@ bool logger_message(struct Logger* logger, LogLevel log_level, const char* forma
  */
 #define LOG(logger, log_level, format, ...) logger_message(logger, log_level, format, ##__VA_ARGS__)
 
-#endif // ALT_LOGGER
+#endif // ALT_LOGGER_H
