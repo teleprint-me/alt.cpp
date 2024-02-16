@@ -154,6 +154,58 @@ bool logger_message(struct Logger* logger, log_level_t log_level, const char* fo
  */
 #define LOG(logger, log_level, format, ...) logger_message(logger, log_level, format, ##__VA_ARGS__)
 
+/**
+ * @brief Global Logger Object
+ *
+ * The global logger object provides a centralized logging mechanism for the program.
+ * It is statically initialized with default values and can be accessed from any part
+ * of the program to log messages at various log levels. The logger ensures thread-safe
+ * logging through the use of a mutex.
+ *
+ * @note The global logger object should not be reinitialized or modified after its
+ * creation, as this could lead to undefined behavior. Additionally, explicitly
+ * destroying the mutex associated with the logger is not strictly necessary but
+ * can be considered good practice, especially in environments where resources
+ * are checked meticulously at program exit.
+ *
+ * @var global_logger
+ * The global logger object has the following attributes:
+ * - log_level: The logging level of the logger.
+ * - log_type: The type of logger.
+ * - log_type_name: The name associated with the logger type.
+ * - file_stream: The file stream for writing log messages.
+ * - file_path: The path to the log file.
+ * - thread_lock: Mutex to ensure thread-safe logging.
+ *
+ * @warning Modifying the global logger object or attempting to reinitialize
+ * the mutex after initialization can lead to undefined behavior.
+ */
 extern struct Logger global_logger;
+
+/**
+ * @brief Initialize Global Logger
+ *
+ * Initializes the global logger object with the specified attributes.
+ * This function allows customization of the logger's properties such as
+ * log level, log type, file stream, and file path. It should be called
+ * before using the global logger to ensure proper logging behavior.
+ *
+ * @param log_level The desired logging level for the logger.
+ * @param log_type The type of logger to be used (e.g., stream, file).
+ * @param log_type_name The name associated with the logger type.
+ * @param file_stream The file stream for writing log messages (NULL if not applicable).
+ * @param file_path The path to the log file (NULL if not applicable).
+ *
+ * @warning Calling this function may alter the behavior of the global logger
+ * and should be used with caution. Avoid calling this function after the
+ * global logger has been initialized to prevent unintended side effects.
+ */
+void initialize_global_logger(
+    log_level_t log_level,
+    log_type_t  log_type,
+    const char* log_type_name,
+    FILE*       file_stream,
+    const char* file_path
+);
 
 #endif // ALT_LOGGER_H

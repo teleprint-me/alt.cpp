@@ -6,7 +6,7 @@
 
 #include "../include/logger.h"
 
-const char* LogTypeName[] = {"unknown", "stream", "file"};
+const char* LOG_TYPE_NAME[] = {"unknown", "stream", "file"};
 
 /**
  * @brief Sets the logger type and name.
@@ -25,11 +25,11 @@ bool set_logger_type_and_name(struct Logger* logger, log_type_t log_type) {
         case LOG_TYPE_UNKNOWN:
         case LOG_TYPE_STREAM:
             logger->log_type      = LOG_TYPE_STREAM;
-            logger->log_type_name = LogTypeName[LOG_TYPE_STREAM];
+            logger->log_type_name = LOG_TYPE_NAME[LOG_TYPE_STREAM];
             return true;
         case LOG_TYPE_FILE:
             logger->log_type      = LOG_TYPE_FILE;
-            logger->log_type_name = LogTypeName[LOG_TYPE_FILE];
+            logger->log_type_name = LOG_TYPE_NAME[LOG_TYPE_FILE];
             return true;
         default:
             fprintf(stderr, "Invalid logger type\n");
@@ -226,6 +226,7 @@ bool logger_message(struct Logger* logger, log_level_t log_level, const char* fo
     // Apply lazy initialization for global logger
     if (NULL == logger->file_stream) {
         logger->file_stream = stderr;
+        // WARN: DO NOT REINITIALIZE THE MUTEX
     }
 
     // Only lock the thread if log_level is valid!
@@ -293,3 +294,36 @@ struct Logger global_logger = {
     NULL,                     /**< File path */
     PTHREAD_MUTEX_INITIALIZER /**< Mutex for thread safety */
 };
+
+/**
+ * @brief Initialize Global Logger
+ *
+ * Initializes the global logger object with the specified attributes.
+ * This function allows customization of the logger's properties such as
+ * log level, log type, file stream, and file path. It should be called
+ * before using the global logger to ensure proper logging behavior.
+ *
+ * @param log_level The desired logging level for the logger.
+ * @param log_type The type of logger to be used (e.g., stream, file).
+ * @param log_type_name The name associated with the logger type.
+ * @param file_stream The file stream for writing log messages (NULL if not applicable).
+ * @param file_path The path to the log file (NULL if not applicable).
+ *
+ * @warning Calling this function may alter the behavior of the global logger
+ * and should be used with caution. Avoid calling this function after the
+ * global logger has been initialized to prevent unintended side effects.
+ */
+void initialize_global_logger(
+    log_level_t log_level,
+    log_type_t  log_type,
+    const char* log_type_name,
+    FILE*       file_stream,
+    const char* file_path
+) {
+    global_logger.log_level     = log_level;
+    global_logger.log_type      = log_type;
+    global_logger.log_type_name = log_type_name;
+    global_logger.file_stream   = file_stream;
+    global_logger.file_path     = file_path;
+    // WARN: DO NOT REINITIALIZE THE MUTEX
+}
