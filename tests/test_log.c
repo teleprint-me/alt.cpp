@@ -4,7 +4,7 @@
  * Copyright © 2024 Austin Berrio
  *
  * Build:
- *   gcc -o test_log tests/test_log.c -lpthread
+ *   gcc -o test_log source/logger.c tests/test_log.c -lpthread
  * Run:
  *   ./test_log
  * Expected output:
@@ -18,7 +18,7 @@
  * Expected output:
  *   [DEBUG] Logging to a file: 1, 2, 3... Done!
  */
-#include "../include/log.h"
+#include "../include/logger.h"
 
 int main(void) {
     // Test logging to a file
