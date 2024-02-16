@@ -41,7 +41,7 @@ struct Vector* vector_create(size_t size) {
     return vector;
 }
 
-struct Vector* vector_deep_copy(float elements[], size_t size) {
+struct Vector* vector_deep_copy(const float elements[], size_t size) {
     struct Vector* deep_copy = vector_create(size);
     if (NULL == deep_copy) {
         return NULL;
@@ -54,7 +54,7 @@ struct Vector* vector_deep_copy(float elements[], size_t size) {
     return deep_copy;
 }
 
-struct Vector* vector_clone(struct Vector* vector) {
+struct Vector* vector_clone(const struct Vector* vector) {
     // note: this is just a convenience function for vector_deep_copy
     struct Vector* clone = vector_deep_copy(vector->elements, vector->size);
     if (NULL == clone) {
@@ -80,7 +80,7 @@ bool vector_destroy(struct Vector* vector) {
 }
 
 // Vector mathematical operations
-float vector_magnitude(struct Vector* vector) {
+float vector_magnitude(const struct Vector* vector) {
     float sum = 0;
 
     // sum the square of the elements for n-dimensional vectors
@@ -91,11 +91,11 @@ float vector_magnitude(struct Vector* vector) {
     return sqrt(sum);
 }
 
-struct Vector* vector_normalize(struct Vector* vector, bool inplace, struct Logger* logger) {
+struct Vector* vector_normalize(struct Vector* vector, bool inplace) {
     float magnitude = vector_magnitude(vector);
 
     if (0 == magnitude) {
-        LOG(logger, LOG_LEVEL_ERROR, "Cannot normalize a zero-length vector.\n");
+        LOG(&global_logger, LOG_LEVEL_ERROR, "Cannot normalize a zero-length vector.\n");
         return NULL;
     }
 
@@ -110,7 +110,9 @@ struct Vector* vector_normalize(struct Vector* vector, bool inplace, struct Logg
 
     struct Vector* unit = vector_create(vector->size);
     if (NULL == unit) {
-        LOG(logger, LOG_LEVEL_ERROR, "Failed to allocate memory for the normalized unit vector.\n");
+        LOG(&global_logger,
+            LOG_LEVEL_ERROR,
+            "Failed to allocate memory for the normalized unit vector.\n");
         return NULL;
     }
 
@@ -135,22 +137,24 @@ float multiply(float x, float y) {
 }
 
 float divide(float x, float y) {
-    if (y == 0) {
-        // Handle division by zero error
-        return 0;
-    }
+    // NOTE: Consider using NAN or LOG or both here.
+    if (y == 0) { // It is possible and valid for y to be zero.
+        LOG(&global_logger,
+            LOG_LEVEL_WARN,
+            "Vector with x (%f) and y (%f) yielded division by zero.\n",
+            x,
+            y);
+        return 0; // Handle division by zero error.
+    }             // Another possible return value is 1 (identity).
     return x / y;
 }
 
 // Function to perform element-wise operation on two vectors
 struct Vector* perform_elementwise_operation(
-    const struct Vector* a,
-    const struct Vector* b,
-    struct Logger*       logger,
-    float (*operation)(float, float)
+    const struct Vector* a, const struct Vector* b, float (*operation)(float, float)
 ) {
     if (a->size != b->size) {
-        LOG(logger,
+        LOG(&global_logger,
             LOG_LEVEL_ERROR,
             "Vector dimensions do not match. Cannot perform operation on vectors of size %zu and "
             "%zu.\n",
@@ -161,7 +165,8 @@ struct Vector* perform_elementwise_operation(
 
     struct Vector* c = vector_create(a->size);
     if (NULL == c) {
-        LOG(logger, LOG_LEVEL_ERROR, "Failed to allocate memory for the resultant vector.\n");
+        LOG(&global_logger, LOG_LEVEL_ERROR, "Failed to allocate memory for the resultant vector.\n"
+        );
         return NULL;
     }
 
@@ -174,28 +179,33 @@ struct Vector* perform_elementwise_operation(
 }
 
 // Updated functions using the new helper function
-struct Vector* vector_add(struct Vector* a, struct Vector* b, struct Logger* logger) {
-    return perform_elementwise_operation(a, b, logger, add);
+struct Vector* vector_add(const struct Vector* a, const struct Vector* b) {
+    return perform_elementwise_operation(a, b, add);
 }
 
-struct Vector* vector_subtract(struct Vector* a, struct Vector* b, struct Logger* logger) {
-    return perform_elementwise_operation(a, b, logger, subtract);
+struct Vector* vector_subtract(const struct Vector* a, const struct Vector* b) {
+    return perform_elementwise_operation(a, b, subtract);
 }
 
-struct Vector*
-vector_multiply(const struct Vector* a, const struct Vector* b, struct Logger* logger) {
-    return perform_elementwise_operation(a, b, logger, multiply);
+struct Vector* vector_multiply(const struct Vector* a, const struct Vector* b) {
+    return perform_elementwise_operation(a, b, multiply);
 }
 
-struct Vector*
-vector_divide(const struct Vector* a, const struct Vector* b, struct Logger* logger) {
-    return perform_elementwise_operation(a, b, logger, divide);
+struct Vector* vector_divide(const struct Vector* a, const struct Vector* b) {
+    return perform_elementwise_operation(a, b, divide);
 }
 
-float vector_dot_product(const struct Vector* a, const struct Vector* b) {}
+float vector_dot_product(const struct Vector* a, const struct Vector* b) {
+    float product = 0.0f;
 
-struct Vector*
-vector_cross_product(const struct Vector* a, const struct Vector* b, struct Logger* logger) {}
+    for (size_t i = 0; i < a->size; i++) {
+        product += a->elements[i] * b->elements[i];
+    }
+
+    return product;
+}
+
+struct Vector* vector_cross_product(const struct Vector* a, const struct Vector* b) {}
 
 // Coordinate transformation functions (prototypes to be defined)
 struct Vector* polar_to_cartesian(const struct Vector* polar_vector) {}

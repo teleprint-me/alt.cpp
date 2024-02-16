@@ -13,7 +13,7 @@
 #ifndef ALT_VECTOR_H
 #define ALT_VECTOR_H
 
-#include "logger.h" // Include the logger header for error logging functionality
+#include "logger.h"
 
 #include <math.h>
 #include <stdbool.h>
@@ -34,7 +34,7 @@ bool           vector_destroy(struct Vector* vector);
 
 // Vector mathematical operations
 float          vector_magnitude(const struct Vector* vector);
-struct Vector* vector_normalize(struct Vector* vector, bool inplace, struct Logger* logger);
+struct Vector* vector_normalize(struct Vector* vector, bool inplace);
 
 // Helper functions for element-wise operations
 float add(float x, float y);
@@ -46,21 +46,17 @@ float divide(float x, float y);
 struct Vector* perform_elementwise_operation(
     const struct Vector* a,
     const struct Vector* b,
-    struct Logger*       logger,
     float (*operation)(float, float) // pass function by value
 );
 
-struct Vector* vector_add(const struct Vector* a, const struct Vector* b, struct Logger* logger);
-struct Vector*
-vector_subtract(const struct Vector* a, const struct Vector* b, struct Logger* logger);
-struct Vector*
-vector_multiply(const struct Vector* a, const struct Vector* b, struct Logger* logger);
-struct Vector* vector_divide(const struct Vector* a, const struct Vector* b, struct Logger* logger);
+struct Vector* vector_add(const struct Vector* a, const struct Vector* b);
+struct Vector* vector_subtract(const struct Vector* a, const struct Vector* b);
+struct Vector* vector_multiply(const struct Vector* a, const struct Vector* b);
+struct Vector* vector_divide(const struct Vector* a, const struct Vector* b);
 
 // Calculate vector products
-float vector_dot_product(const struct Vector* a, const struct Vector* b);
-struct Vector*
-vector_cross_product(const struct Vector* a, const struct Vector* b, struct Logger* logger);
+float          vector_dot_product(const struct Vector* a, const struct Vector* b);
+struct Vector* vector_cross_product(const struct Vector* a, const struct Vector* b);
 
 // Coordinate transformation functions (prototypes to be defined)
 struct Vector* polar_to_cartesian(const struct Vector* polar_vector);
