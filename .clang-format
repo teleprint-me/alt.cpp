@@ -8,8 +8,9 @@ Language: Cpp
 # Pointer and reference alignment
 DerivePointerAlignment: false
 PointerAlignment: Left
+ReferenceAlignment: Right
 
-# Indentation settings
+# Indentation
 IndentWidth: 4
 IndentCaseLabels: true
 IndentCaseBlocks: true
@@ -18,24 +19,49 @@ ConstructorInitializerIndentWidth: 10
 IndentPPDirectives: BeforeHash
 PPIndentWidth: 4
 
+# Single-line
+AllowShortBlocksOnASingleLine: Empty
+AllowShortCaseLabelsOnASingleLine: false
+AllowShortEnumsOnASingleLine: false
+AllowShortFunctionsOnASingleLine: Empty
+AllowShortIfStatementsOnASingleLine: Never
+AllowShortLambdasOnASingleLine: All
+
 # Namespace formatting
 NamespaceIndentation: All
 CompactNamespaces: false
 FixNamespaceComments: true
 
-# Alignment and spacing
+# Alignment
 AlignAfterOpenBracket: BlockIndent
-AlignConsecutiveAssignments: true
-AlignConsecutiveDeclarations: true
+AlignConsecutiveAssignments:
+  Enabled: true
+  AcrossComments: true
+  AlignCompound: true
+AlignConsecutiveDeclarations:
+  Enabled: true
+  AcrossComments: true
 AlignConsecutiveMacros:
   Enabled: true
   AcrossEmptyLines: true
   AcrossComments: true
+AlignEscapedNewlines: Left
 MaxEmptyLinesToKeep: 1
+AlignTrailingComments:
+  Kind: Always
+  OverEmptyLines: 0  # Is set to 1 is MaxEmptyLinesToKeep is 2
+
+# Spacing
+SpaceAfterCStyleCast: true
+SpaceAfterLogicalNot: false
+SpaceAfterTemplateKeyword: false
+SpaceAroundPointerQualifiers: Before
+SpaceBeforeAssignmentOperators: true
+SpacesInAngles: Never
 
 # Control structure formatting
 BraceWrapping:
-  AfterClass: true
+  AfterClass: false
   AfterControlStatement: true
   AfterEnum: true
   AfterFunction: true
@@ -46,13 +72,17 @@ BraceWrapping:
   BeforeCatch: true
   BeforeElse: true
   IndentBraces: false
+InsertBraces: false # Warn: Setting this option to true could break code
 
-# Operator breaking
+# Breaking settings
 BreakBeforeBinaryOperators: true
+AlwaysBreakBeforeMultilineStrings: false
 
 # Parameter and argument packing
 BinPackParameters: false
 BinPackArguments: false
+AllowAllArgumentsOnNextLine: true
+AllowAllParametersOfDeclarationOnNextLine: true
 
 # Comma insertion
 InsertTrailingCommas: Wrapped
@@ -60,6 +90,7 @@ InsertTrailingCommas: Wrapped
 # Miscellaneous insertions
 InsertBraces: true
 InsertNewlineAtEOF: true
+SeparateDefinitionBlocks: Always
 
 # Line width and wrapping
 ColumnLimit: 100
