@@ -223,6 +223,11 @@ bool logger_message(struct Logger* logger, log_level_t log_level, const char* fo
         return false; // Do not log messages below the current logger->log_level
     }
 
+    // Apply lazy initialization for global logger
+    if (NULL == logger->file_stream) {
+        logger->file_stream = stderr;
+    }
+
     // Only lock the thread if log_level is valid!
     pthread_mutex_lock(&logger->thread_lock);
 

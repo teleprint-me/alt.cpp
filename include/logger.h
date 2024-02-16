@@ -154,4 +154,6 @@ bool logger_message(struct Logger* logger, log_level_t log_level, const char* fo
  */
 #define LOG(logger, log_level, format, ...) logger_message(logger, log_level, format, ##__VA_ARGS__)
 
+extern struct Logger global_logger;
+
 #endif // ALT_LOGGER_H

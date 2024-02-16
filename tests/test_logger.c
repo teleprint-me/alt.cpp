@@ -1,10 +1,10 @@
 /*
- * alt.cpp/tests/test_log.c
+ * alt.cpp/tests/test_logger.c
  *
  * Copyright © 2024 Austin Berrio
  *
  * Build:
- *   gcc -o test_log source/logger.c tests/test_log.c -lpthread
+ *   gcc -o test_log source/logger.c tests/test_logger.c -lpthread
  * Run:
  *   ./test_log
  * Expected output:
@@ -37,6 +37,13 @@ int main(void) {
     stream_logger->log_level = LOG_LEVEL_WARN;
     LOG(stream_logger, LOG_LEVEL_INFO, "This message should not be logged\n");
     LOG(stream_logger, LOG_LEVEL_WARN, "This is a warning message\n");
+
+    // Test logging with the global logger
+    LOG(&global_logger, LOG_LEVEL_INFO, "Global logger test message\n");
+
+    // Optionally, change the global logger's level or attributes and test again
+    global_logger.log_level = LOG_LEVEL_ERROR;
+    LOG(&global_logger, LOG_LEVEL_WARN, "This message should not appear\n");
 
     // Clean up
     logger_destroy(file_logger);
