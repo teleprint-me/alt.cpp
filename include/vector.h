@@ -46,7 +46,7 @@ struct Vector*
 vector_cross_product(const struct Vector* a, const struct Vector* b, struct Logger* logger);
 
 // Coordinate transformation functions (prototypes to be defined)
-struct Vector* polar_to_cartesian(const struct Vector* polarVector);
-struct Vector* cartesian_to_polar(const struct Vector* cartesianVector);
+struct Vector* polar_to_cartesian(const struct Vector* polar_vector);
+struct Vector* cartesian_to_polar(const struct Vector* cartesian_vector);
 
 #endif // ALT_VECTOR_H
