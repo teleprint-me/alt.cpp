@@ -16,28 +16,28 @@
 /**
  * @brief Enumeration representing different levels of logging.
  */
-typedef enum {
+typedef enum LOG_LEVEL {
     LOG_LEVEL_DEBUG, /**< Debug level logging. */
     LOG_LEVEL_INFO,  /**< Information level logging. */
     LOG_LEVEL_WARN,  /**< Warning level logging. */
     LOG_LEVEL_ERROR  /**< Error level logging. */
-} LogLevel;
+} log_level_t;
 
 /**
  * @brief Enumeration representing different types of logging.
  */
-typedef enum {
+typedef enum LOG_TYPE {
     LOG_TYPE_UNKNOWN, /**< Unknown log type. */
     LOG_TYPE_STREAM,  /**< Log to a stream (e.g., stdout or stderr). */
     LOG_TYPE_FILE     /**< Log to a file. */
-} LogType;
+} log_type_t;
 
 /**
  * @brief Structure representing a logger object.
  */
 struct Logger {
-    LogLevel        log_level;     /**< The logging level of the logger. */
-    LogType         log_type;      /**< The type of logger. */
+    log_level_t     log_level;     /**< The logging level of the logger. */
+    log_type_t      log_type;      /**< The type of logger. */
     const char*     log_type_name; /**< The name associated with the logger type. */
     FILE*           file_stream;   /**< The file stream for writing log messages. */
     const char*     file_path;     /**< The path to the log file. */
@@ -55,7 +55,7 @@ struct Logger {
  *
  * @return True if the type and name were set successfully, false otherwise.
  */
-bool set_logger_type_and_name(struct Logger* logger, LogType log_type);
+bool set_logger_type_and_name(struct Logger* logger, log_type_t log_type);
 
 /**
  * @brief Sets the file path and stream for the logger.
@@ -87,7 +87,7 @@ bool set_logger_file_path_and_stream(struct Logger* logger, const char* file_pat
  * @return A pointer to the newly created logger instance, or NULL if memory
  * allocation fails or if the logger type is invalid.
  */
-struct Logger* logger_new(LogType log_type);
+struct Logger* logger_new(log_type_t log_type);
 
 /**
  * @brief Creates a new logger instance with the specified log file path and log
@@ -106,7 +106,7 @@ struct Logger* logger_new(LogType log_type);
  * @return A pointer to the newly created logger instance, or NULL if memory
  * allocation fails or if the specified log file cannot be opened.
  */
-struct Logger* logger_create(LogLevel log_level, LogType log_type, const char* file_path);
+struct Logger* logger_create(log_level_t log_level, log_type_t log_type, const char* file_path);
 
 /**
  * @brief Destroys a logger instance and releases associated resources.
@@ -133,7 +133,7 @@ bool logger_destroy(struct Logger* logger);
  *
  * @return true if the message was successfully logged, false otherwise.
  */
-bool logger_message(struct Logger* logger, LogLevel log_level, const char* format, ...);
+bool logger_message(struct Logger* logger, log_level_t log_level, const char* format, ...);
 
 /**
  * @brief Macro for logging messages using a logger instance.
