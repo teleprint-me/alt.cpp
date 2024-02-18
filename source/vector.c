@@ -158,24 +158,25 @@ struct Vector* vector_scale(struct Vector* vector, float scalar, bool inplace) {
         return NULL;
     }
 
-    if (inplace) {
+    if (inplace) { // block out-of-place vector scaling if in-place is true
         for (size_t i = 0; i < vector->size; ++i) {
             vector->elements[i] *= scalar; // scale the vector in-place
         }
         return vector; // return the scaled vector
     }
 
-    struct Vector* new_vector = vector_create(vector->size);
-    if (new_vector == NULL) {
+    // perform out-of-place vector scaling
+    struct Vector* scaled_vector = vector_create(vector->size);
+    if (scaled_vector == NULL) {
         LOG(&global_logger, LOG_LEVEL_ERROR, "Failed to allocate memory for scaled vector.\n");
         return NULL;
     }
 
     for (size_t i = 0; i < vector->size; ++i) {
-        new_vector->elements[i] = vector->elements[i] * scalar;
+        scaled_vector->elements[i] = vector->elements[i] * scalar;
     }
 
-    return new_vector;
+    return scaled_vector;
 }
 
 // Helper function for element-wise operations

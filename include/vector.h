@@ -175,12 +175,20 @@ struct Vector* vector_normalize(struct Vector* vector, bool inplace);
 float vector_distance(const struct Vector* a, const struct Vector* b);
 
 /**
- * @brief Scales a vector by a scalar value (optional in-place).
+ * @brief Scales a vector by a given scalar value.
  *
- * @param vector The vector to scale.
- * @param scalar The scalar value.
- * @param inplace If true, scale the vector in-place.
- * @return A pointer to the scaled vector.
+ * This function scales a vector by a scalar, either modifying the original vector (in-place)
+ * or creating a new scaled vector (out-of-place), based on the `inplace` parameter.
+ * If `vector` is NULL, the function returns NULL to indicate an error.
+ * For out-of-place scaling, if memory allocation for the new vector fails, the function logs
+ * an error and returns NULL.
+ *
+ * @param vector A pointer to the vector to scale.
+ * @param scalar The scalar value by which to scale the vector's elements.
+ * @param inplace If true, scales the original vector in-place. If false, returns a new scaled
+ * vector.
+ * @return A pointer to the scaled vector (which may be the same as `vector` if `inplace` is true),
+ *         or NULL if the operation could not be performed.
  */
 struct Vector* vector_scale(struct Vector* vector, float scalar, bool inplace);
 
