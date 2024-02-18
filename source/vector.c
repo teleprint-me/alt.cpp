@@ -133,6 +133,26 @@ struct Vector* vector_normalize(struct Vector* vector, bool inplace) {
     return unit;
 }
 
+float vector_distance(const struct Vector* a, const struct Vector* b) {
+    float distance_squared = 0.0f;
+
+    if (a->size != b->size) {
+        LOG(&global_logger,
+            LOG_LEVEL_ERROR,
+            "Vector dimensions do not match. Cannot perform operation on vectors of size %zu and "
+            "%zu.\n",
+            a->size,
+            b->size);
+        return NAN;
+    }
+
+    for (size_t i = 0; i < a->size; ++i) {
+        distance_squared += powf(a->elements[i] - b->elements[i], 2.0f);
+    }
+
+    return sqrtf(distance_squared);
+}
+
 // Helper function for element-wise operations
 float add(float x, float y) {
     return x + y;
