@@ -157,6 +157,8 @@
     "typeinfo": "cpp",
     "valarray": "cpp",
     "variant": "cpp",
-    "log.h": "c"
+    "log.h": "c",
+    "pthread.h": "c",
+    "logger.h": "c"
   }
 }
