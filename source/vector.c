@@ -24,13 +24,21 @@
 struct Vector* vector_create(size_t size) {
     struct Vector* vector = (struct Vector*) malloc(sizeof(struct Vector));
     if (NULL == vector) { // If no memory was allocated
-        return NULL;      // Early return if vector creation failed
+        LOG(&global_logger,
+            LOG_LEVEL_ERROR,
+            "Failed to allocate %zu bytes to struct Vector.\n",
+            size);
+        return NULL; // Early return if vector creation failed
     }
 
     vector->elements = (float*) malloc(size * sizeof(float));
     if (NULL == vector->elements) { // Failed to allocate memory for elements
-        free(vector);               // Free allocated vector memory to prevent leaks
-        return NULL;                // Early return if vector creation failed
+        LOG(&global_logger,
+            LOG_LEVEL_ERROR,
+            "Failed to allocate %zu bytes to vector->elements.\n",
+            size);
+        free(vector); // Free allocated vector memory to prevent leaks
+        return NULL;  // Early return if vector creation failed
     }
 
     // After allocating vector->elements
@@ -66,10 +74,12 @@ struct Vector* vector_clone(const struct Vector* vector) {
 
 bool vector_destroy(struct Vector* vector) {
     if (NULL == vector) {
+        LOG(&global_logger, LOG_LEVEL_ERROR, "Cannot free a NULL struct Vector.\n");
         return false;
     }
 
     if (NULL == vector->elements) {
+        LOG(&global_logger, LOG_LEVEL_ERROR, "Cannot free a NULL vector->elements member.\n");
         return false;
     }
 
@@ -138,16 +148,12 @@ float multiply(float x, float y) {
 
 float divide(float x, float y) {
     if (y == 0) {
-        // Log a warning about division by zero to inform the user.
         LOG(&global_logger,
-            LOG_LEVEL_WARN,
-            "Attempted division by zero with x (%f) and y (%f). Returning default value 0.\n",
+            LOG_LEVEL_ERROR,
+            "Division by zero is undefined. Cannot divide x (%f) by y (%f).\n",
             x,
             y);
-        // Return 0 as a default value to avoid division by zero while signaling the error.
-        // This choice is documented and intentional to prevent `NaN` in vector calculations,
-        // ensuring vectors remain valid for subsequent operations.
-        return 0;
+        return NAN; // Division by zero is undefined
     }
     return x / y;
 }
@@ -198,7 +204,18 @@ struct Vector* vector_divide(const struct Vector* a, const struct Vector* b) {
     return perform_elementwise_operation(a, b, divide);
 }
 
+// dot product is n-dimensional
 float vector_dot_product(const struct Vector* a, const struct Vector* b) {
+    if (a->size != b->size) {
+        LOG(&global_logger,
+            LOG_LEVEL_ERROR,
+            "Vector dimensions do not match. Cannot perform operation on vectors of size %zu and "
+            "%zu.\n",
+            a->size,
+            b->size);
+        return NAN;
+    }
+
     float product = 0.0f;
 
     for (size_t i = 0; i < a->size; i++) {
@@ -208,9 +225,62 @@ float vector_dot_product(const struct Vector* a, const struct Vector* b) {
     return product;
 }
 
-struct Vector* vector_cross_product(const struct Vector* a, const struct Vector* b) {}
+// cross product is 3-dimensional
+struct Vector* vector_cross_product(const struct Vector* a, const struct Vector* b) {
+    // Ensure both vectors are 3-dimensional.
+    if (a->size != 3 || b->size != 3) {
+        LOG(&global_logger,
+            LOG_LEVEL_ERROR,
+            "Cross product is only defined for 3-dimensional vectors.\n");
+        return NULL;
+    }
+
+    struct Vector* result = vector_create(3);
+    if (result == NULL) {
+        LOG(&global_logger, LOG_LEVEL_ERROR, "Failed to allocate memory for cross product vector.\n"
+        );
+        return NULL;
+    }
+
+    // Calculate the components of the cross product vector.
+    result->elements[0] = a->elements[1] * b->elements[2] - a->elements[2] * b->elements[1];
+    result->elements[1] = a->elements[2] * b->elements[0] - a->elements[0] * b->elements[2];
+    result->elements[2] = a->elements[0] * b->elements[1] - a->elements[1] * b->elements[0];
+
+    return result;
+}
 
 // Coordinate transformation functions (prototypes to be defined)
 struct Vector* polar_to_cartesian(const struct Vector* polar_vector) {}
 
 struct Vector* cartesian_to_polar(const struct Vector* cartesian_vector) {}
+
+// Function to calculate the softmax of a vector
+struct Vector* vector_softmax(const struct Vector* vector) {
+    // Calculate exponentials for each element in vector
+    struct Vector* exponents = vector_create(vector->size);
+    if (NULL == exponents) {
+        return NULL;
+    }
+
+    float sum = 0.0;
+    for (size_t i = 0; i < vector->size; i++) {
+        exponents->elements[i]  = exp(vector->elements[i]);
+        sum                    += exponents->elements[i];
+    }
+
+    // Divide each exponent by the total sum and store in output vector
+    struct Vector* output = vector_create(vector->size);
+    if (NULL == output) {
+        vector_destroy(exponents);
+        return NULL;
+    }
+
+    for (size_t i = 0; i < vector->size; i++) {
+        output->elements[i] = exponents->elements[i] / sum;
+    }
+
+    // Clean up and return the result
+    vector_destroy(exponents);
+    return output;
+}
