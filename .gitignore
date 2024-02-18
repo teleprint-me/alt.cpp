@@ -2,16 +2,14 @@
 main
 alt
 
-# ignore local test binaries
-test_*
-
 # ignore local paths
 /build
 /local
 /logs
 
-# ignore automatically generated configuration files
+# ignore local files
 *.ini
+*.txt
 
 ####################
 # C++ ignore rules #
