@@ -6,10 +6,14 @@
 #include <pthread.h>
 #include <stdio.h>
 
-void initialize_vector(struct Vector* vector, size_t offset) {
+struct Vector* initialize_vector(size_t size, size_t offset, (float) (*operation)(float, float) ) {
+    struct Vector* vector = vector_create(size);
+
     for (size_t i = 0; i < vector->size; i++) {
-        vector->elements[i] = i + offset;
+        vector->elements[i] = operation(i, offset);
     }
+
+    return vector;
 }
 
 int main() {
@@ -18,15 +22,18 @@ int main() {
     pthread_t      thread_id;
     pthread_attr_t attr;
 
-    struct Vector* a = vector_create(5);
-    initialize_vector(a, 1);
+    size_t size = 5; // Vectors must be the same size.
 
-    struct Vector* b = vector_create(5);
-    initialize_vector(b, 2);
-
+    struct Vector* a = initialize_vector(size, 1, add);
+    struct Vector* b = initialize_vector(size, 2, add);
     struct Vector* c = NULL;
 
-    vector_add(a, b);
+    struct Vector* x = initialize_vector(size, 1, multiply);
+    struct Vector* y = initialize_vector(size, 2, multiply);
+    struct Vector* z = NULL;
+
+    c = vector_add(a, b);      // returns a new vector
+    z = vector_multiply(x, y); // returns a new vector
 
     // Initialize thread attributes
     pthread_attr_init(&attr);
