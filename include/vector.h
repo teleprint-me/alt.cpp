@@ -3,11 +3,46 @@
  *
  * Copyright © 2024 Austin Berrio
  *
- * Goal: Create a simple and easy to use Vector and Matrix API.
+ * Overview:
+ * This library provides a comprehensive and efficient Vector and Matrix API designed for high
+ * performance and ease of use in scientific computing, data analysis, and machine learning
+ * applications. It emphasizes simplicity, speed, and flexibility, leveraging pure C for core
+ * operations to ensure maximum compatibility and performance. Advanced mathematical operations and
+ * transformations are supported with minimal dependency on external libraries, adhering to a
+ * philosophy of lightweight and focused design.
  *
- * Try sticking to using pure C. Only use math libs and C++ when absolutely necessary.
+ * Features:
+ * - Dynamic creation and management of vectors and matrices with support for deep copying and
+ * cloning.
+ * - A suite of mathematical operations, including vector normalization, magnitude calculation, and
+ * a variety of element-wise operations for flexible data manipulation.
+ * - Advanced vector operations such as dot and cross products, alongside essential functions for
+ * coordinate transformation, providing the tools necessary for complex spatial and algebraic
+ * calculations.
+ * - Specialized functions for machine learning applications, including softmax activation and
+ * cross-entropy loss calculation, facilitating the development of algorithms and models directly in
+ * C.
+ * - Utility functions for common tasks such as vector scaling and distance calculation, enhancing
+ * the library's applicability to a wide range of computational problems.
  *
- * NOTE: Prefixing related objects, functions, etc. assists with autocomplete.
+ * Usage Guidelines:
+ * - This API is designed to be intuitive for users familiar with vector and matrix operations.
+ * Function names and parameters follow conventional mathematical notation where possible.
+ * - Users are encouraged to leverage the element-wise operation function to extend the library's
+ * functionality and implement custom operations as needed.
+ * - While the library aims to operate purely in C, certain operations may require linking against
+ * standard math libraries (e.g., -lm on Unix-like systems) for complex mathematical functions.
+ * - For best performance, attention should be paid to memory management practices, especially in
+ * applications requiring intensive computational resources or running on constrained hardware.
+ *
+ * Note:
+ * - Prefixing related objects, functions, etc., has been adopted to enhance code readability and
+ * assist with autocomplete features in various development environments. This convention is
+ * intended to streamline development workflows and facilitate quick integration into existing
+ * projects.
+ *
+ * This API stands as a testament to the power and flexibility of C, aiming to provide developers
+ * with a robust toolkit for tackling a broad spectrum of computational challenges.
  *
  */
 #ifndef ALT_VECTOR_H
