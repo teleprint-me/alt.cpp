@@ -158,11 +158,19 @@ float vector_magnitude(const struct Vector* vector);
 struct Vector* vector_normalize(struct Vector* vector, bool inplace);
 
 /**
- * @brief Calculates the distance between two vectors.
+ * @brief Calculates the Euclidean distance between two n-dimensional vectors.
  *
- * @param a The first vector.
- * @param b The second vector.
- * @return The distance between the two vectors.
+ * This function calculates the Euclidean distance between two given vectors `a` and `b`, where each
+ * vector is represented by a pointer to its underlying elements and its size. The function first
+ * checks if the sizes of both vectors match. If they don't, an error message is logged and the
+ * function returns NaN as the result. Otherwise, it calculates the sum of squared differences
+ * between the corresponding components of the two vectors. Finally, the function takes the square
+ * root of the sum to find the Euclidean distance and returns it as the result.
+ *
+ * @param a A pointer to the first vector.
+ * @param b A pointer to the second vector.
+ * @return The Euclidean distance between vectors `a` and `b`. If the sizes of the vectors do not
+ * match, the function returns NaN.
  */
 float vector_distance(const struct Vector* a, const struct Vector* b);
 
