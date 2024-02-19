@@ -326,30 +326,21 @@ struct Vector* vector_cartesian_to_polar(const struct Vector* cartesian_vector);
 struct Vector* vector_softmax(const struct Vector* vector);
 
 /**
- * @brief Calculates the cross-entropy loss between two probability distributions.
+ * @brief Calculates the cross-entropy loss between the predicted values and the target values.
  *
- * This function computes the cross-entropy loss between the predicted and target probability
- * distributions provided as vectors. It incorporates numerical stability enhancements through
- * an epsilon value and offers customizable normalization.
+ * Cross-entropy loss is a measure of the difference between two probability distributions.
+ * It is commonly used in machine learning for binary classification problems.
+ * The formula used here is `−∑ y log(p)`, where `y` is the target value and `p` is the predicted
+ * value, both clipped to ensure they are within a valid range for logarithmic calculations.
  *
- * Parameters:
- * @param prediction: The predicted probability distribution.
- * @param target: The target probability distribution.
- * @param epsilon: A small value added to the log function to prevent log(0). Default is 1e-10f if
- * NAN is passed.
- * @param normalization_factor: Controls the loss normalization. Special values (e.g., 1.0) may
- * alter the normalization behavior. Default is 2.0f is NAN is passed.
- *
- * @return The cross-entropy loss as a float. Returns NAN for invalid inputs or internal errors.
- *
- * @note Both prediction and target vectors should contain values in the [0, 1] range.
- * @note This function logs errors for out-of-range values and returns NaN as a result.
+ * @param prediction The predicted values (probability distribution).
+ * @param target The target values (true labels).
+ * @param epsilon A small value added to predicted values to prevent taking the logarithm of zero.
+ * @return The cross-entropy loss between the predicted and target values.
+ *         Returns NaN if either prediction or target is NULL, or if their sizes do not match.
  */
 float vector_cross_entropy(
-    const struct Vector* prediction,
-    const struct Vector* target,
-    float                epsilon,
-    float                normalization_factor
+    const struct Vector* prediction, const struct Vector* target, float epsilon
 );
 
 #endif // ALT_VECTOR_H

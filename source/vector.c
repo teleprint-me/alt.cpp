@@ -402,44 +402,38 @@ struct Vector* vector_softmax(const struct Vector* vector) {
 }
 
 float vector_cross_entropy(
-    const struct Vector* prediction,
-    const struct Vector* target,
-    float                epsilon,
-    float                normalization_factor
+    const struct Vector* prediction, const struct Vector* target, float epsilon
 ) {
+    // Validate inputs
     if (prediction == NULL || target == NULL) {
         LOG(&global_logger, LOG_LEVEL_ERROR, "prediction and target cannot be NULL.\n");
-        return NAN; // not a number
+        return NAN;
     }
-
     if (prediction->size != target->size) {
         LOG(&global_logger,
             LOG_LEVEL_ERROR,
-            "Vector dimensions do not match. prediction->size(%zu) and "
-            "target->size(%zu).\n",
+            "Vector dimensions do not match. prediction->size(%zu) and target->size(%zu).\n",
             prediction->size,
             target->size);
+        return NAN;
     }
 
+    // Clip prediction values to ensure they're within the valid range for logf
+    // NOTE: Set inplace to false. We have to type cast regardless.
+    struct Vector* clipped_prediction
+        = vector_clip((struct Vector*) prediction, epsilon, 1.0f - epsilon, false);
+    if (clipped_prediction == NULL) {
+        return NAN; // Error logging is handled within vector_clip
+    }
+
+    // calculate the cross-entropy loss according to the formula `−∑ y log(p)` where `y` is the
+    // target and `p` is the clipped prediction for binary classification.
     float total_loss = 0.0f;
-
-    for (size_t i = 0; i < prediction->size; ++i) {
-        if (prediction->elements[i] <= 0.0f || target->elements[i] <= 0.0f
-            || prediction->elements[i] > 1.0f || target->elements[i] > 1.0f) {
-            LOG(&global_logger,
-                LOG_LEVEL_ERROR,
-                "Invalid input to cross entropy function: element at index %zu out of range.\n",
-                i);
-            return NAN; // not a number
-        }
-
-        float prediction_log  = logf(prediction->elements[i] + epsilon) * prediction->elements[i];
-        float target_log      = logf(target->elements[i]) * target->elements[i];
-        float elemental_loss  = prediction_log + target_log;
-        total_loss           += elemental_loss;
+    for (size_t i = 0; i < clipped_prediction->size; ++i) {
+        total_loss += target->elements[i] * logf(clipped_prediction->elements[i]);
     }
 
-    // Normalize the loss by dividing it by the number of elements in the vectors
-    float normalization_factor = powf(normalization_factor, (float) (prediction->size));
-    return -total_loss / normalization_factor;
+    vector_destroy(clipped_prediction); // Clean up the clipped vector
+
+    return -total_loss / prediction->size; // Return the mean cross-entropy loss
 }

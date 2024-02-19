@@ -142,58 +142,80 @@ bool test_vector_shallow_copy(void) {
 }
 
 bool test_vector_destroy(void) {
+    // TODO: Look into valgrind for more refined testing with memory deallocation
     bool result = true;
+
+    // Test destruction of a valid vector
+    struct Vector* vector = vector_create(2);
+    if (NULL == vector) {
+        LOG(&global_logger, LOG_LEVEL_ERROR, "Failed to create a valid vector.\n");
+    }
+
+    if (!vector_destroy(vector)) {
+        LOG(&global_logger, LOG_LEVEL_ERROR, "Failed to destroy a valid vector.\n");
+        result = false;
+    }
+
+    // Test destruction with NULL vector
+    // NOTE: vector_destroy logs an error when passing NULL as an argument.
+    // if (vector_destroy(NULL)) {
+    //     LOG(&global_logger, LOG_LEVEL_ERROR, "vector_destroy should return false for NULL
+    //     input.\n"
+    //     );
+    //     result = false;
+    // }
 
     printf("%s", result ? "." : "x");
     return result; // Return the actual result of the test
 }
 
-bool test_vector_addition(void) {
+bool test_elementwise_operation(
+    const char* operation_label,
+    // Function pointer for expected result calculation
+    struct Vector* (*operation_elementwise)(const struct Vector*, const struct Vector*),
+    float (*operation)(float a, float b)
+) {
     struct Vector* a = vector_create(3);
     struct Vector* b = vector_create(3);
     struct Vector* c = NULL;
 
-    // Set elements for a and b
+    // Initialize vectors a and b
     for (size_t i = 0; i < 3; ++i) {
-        a->elements[i] = 1.0f; // Assuming your vector elements are of type float
+        a->elements[i] = 1.0f;
         b->elements[i] = 2.0f;
     }
 
-    // Perform addition
-    c = vector_add(a, b);
-
-    // Assert the results
+    c           = operation_elementwise(a, b);
     bool result = true;
-    for (size_t i = 0; i < 3; ++i) {
-        if (c->elements[i] != 3.0f) {
-            result = false;
-            break;
+    if (NULL == c) {
+        result = false;
+    } else {
+        for (size_t i = 0; i < 3; ++i) {
+            float expected = operation(a->elements[i], b->elements[i]);
+            if (c->elements[i] != expected) {
+                LOG(&global_logger,
+                    LOG_LEVEL_ERROR,
+                    "%s failed at index %zu with c->elements[%zu] = %f, expected %f",
+                    operation_label,
+                    i,
+                    i,
+                    c->elements[i],
+                    expected);
+                result = false;
+                break;
+            }
         }
     }
 
     vector_destroy(a);
     vector_destroy(b);
-    vector_destroy(c);
+
+    if (c) { // guard against NULL and gracefully exit test
+        vector_destroy(c);
+    }
 
     printf("%s", result ? "." : "x");
     return result;
-}
-
-bool test_vector_subtract(void) {
-    struct Vector* a = vector_create(3);
-    struct Vector* b = vector_create(3);
-    struct Vector* c = NULL;
-
-    a->elements[0] = memset(a->elements, 1, 3 * sizeof(float));
-    memset(b->elements, 2, 3 * sizeof(float));
-
-    c = vector_subtract(a, b); // creates a new vector dynamically
-
-    // test elements results
-
-    vector_destroy(a);
-    vector_destroy(b);
-    vector_destroy(c);
 }
 
 int main(void) {
@@ -204,8 +226,11 @@ int main(void) {
     bool result = true;
 
     result &= test_vector_create();
-    result &= test_vector_addition();
-    result &= test_vector_subtraction();
+    result &= test_vector_deep_copy();
+    result &= test_vector_shallow_copy();
+    result &= test_vector_destroy();
+    result &= test_elementwise_operation("add", vector_add, add);
+    result &= test_elementwise_operation("subtract", vector_subtract, subtract);
 
     if (result) {
         printf("All tests passed.\n");
@@ -213,7 +238,10 @@ int main(void) {
         printf("Tests failed. Please review the logs for more information.\n");
     }
 
-    LOG_DESTROY(); // destroy the logger
+    // logger_destroy(&global_logger); // destroy the logger
+    // WARN: Freeing the global_logger causes a segmentation fault.
+    // The global_logger is part of the call stack and is not allocated memory at runtime.
+    // This is part of the LOG implementation details. Please refer to docs for more info.
 
     return result ? EXIT_SUCCESS : EXIT_FAILURE;
 }
