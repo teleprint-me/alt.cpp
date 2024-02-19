@@ -36,8 +36,8 @@ bool test_vector_create(void) {
     } else if (size != vector->size) {
         // vector_create failed to correctly set the vector size
         LOG(&global_logger,
-            LOG_LEVEL_DEBUG,
-            "Failed to set vector size: expected %zu, got %zu instead.",
+            LOG_LEVEL_ERROR,
+            "Expected struct Vector to have size(%zu), got vector->size(%zu) instead.\n",
             size,
             vector->size);
         result = false;
@@ -61,27 +61,28 @@ bool test_vector_deep_copy(void) {
     original->elements[0]   = 1;
     original->elements[1]   = 3;
 
-    struct Vector* copy = vector_deep_copy(original);
+    struct Vector* deep_copy = vector_deep_copy(original);
 
-    if (NULL == copy) {
+    if (NULL == deep_copy) {
         // vector_deep_copy failed to allocate memory for vector
         result = false;
-    } else if (copy->elements[0] != 1 || copy->elements[1] != 3) {
+    } else if (deep_copy->elements[0] != 1 || deep_copy->elements[1] != 3) {
         // Elements do not match original vector's elements
         result = false;
-    } else if (size != copy->size) {
+    } else if (size != deep_copy->size) {
         // Failed to correctly set the vector size
         LOG(&global_logger,
-            LOG_LEVEL_DEBUG,
-            "Failed to set vector size: expected %zu, got %zu instead.",
+            LOG_LEVEL_ERROR,
+            "Expected struct Vector to have size(%zu), got deep_copy->size(%zu) "
+            "instead.\n",
             size,
-            copy->size);
+            deep_copy->size);
         result = false;
     }
 
     // Cleanup
-    vector_destroy(original); // Assuming this is how you'd free the original vector
-    vector_destroy(copy);     // Free the copied vector
+    vector_destroy(original);  // Assuming this is how you'd free the original vector
+    vector_destroy(deep_copy); // Free the copied vector
 
     printf("%s", result ? "." : "x");
     return result; // Return the actual result of the test
@@ -102,19 +103,22 @@ bool test_vector_shallow_copy(void) {
     // Test if the shallow copy was successful
     if (NULL == shallow_copy) {
         result = false;
-        LOG(&global_logger, LOG_LEVEL_DEBUG, "Shallow copy creation failed.\n");
+        LOG(&global_logger, LOG_LEVEL_ERROR, "Shallow copy creation failed.\n");
     } else if (shallow_copy->elements != original->elements) {
         // Check if both vectors share the same elements array
         result = false;
         LOG(&global_logger,
-            LOG_LEVEL_DEBUG,
+            LOG_LEVEL_ERROR,
             "Elements array not shared between original and shallow copy.\n");
     } else if (size != shallow_copy->size) {
         // Check if both vectors share the same size
         result = false;
         LOG(&global_logger,
-            LOG_LEVEL_DEBUG,
-            "Vectors original->size(%zu) does not equal shallow_copy->size(%zu).\n");
+            LOG_LEVEL_ERROR,
+            "Expected struct Vector to have size(%zu), got shallow_copy->size(%zu) "
+            "instead.\n",
+            size,
+            shallow_copy->size);
     }
 
     // NOTE: Separate concerns for testing modifications
@@ -123,7 +127,7 @@ bool test_vector_shallow_copy(void) {
     if (shallow_copy->elements[0] != 30) {
         result = false;
         LOG(&global_logger,
-            LOG_LEVEL_DEBUG,
+            LOG_LEVEL_ERROR,
             "Changes in original vector not reflected in shallow copy.\n");
     }
 
@@ -194,6 +198,7 @@ bool test_vector_subtract(void) {
 
 int main(void) {
     // NULL for const char* file_path
+    // the log level can probably be set via a CLI param or config in the future.
     initialize_global_logger(LOG_LEVEL_DEBUG, LOG_TYPE_STREAM, "stream", stderr, NULL);
 
     bool result = true;
