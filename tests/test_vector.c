@@ -66,20 +66,17 @@ bool test_vector_deep_copy(void) {
     if (NULL == copy) {
         // vector_deep_copy failed to allocate memory for vector
         result = false;
-    } else {
-        if (copy->elements[0] != 1 || copy->elements[1] != 3) {
-            // Elements do not match original vector's elements
-            result = false;
-        }
-        if (size != copy->size) {
-            // Failed to correctly set the vector size
-            LOG(&global_logger,
-                LOG_LEVEL_DEBUG,
-                "Failed to set vector size: expected %zu, got %zu instead.",
-                size,
-                copy->size);
-            result = false;
-        }
+    } else if (copy->elements[0] != 1 || copy->elements[1] != 3) {
+        // Elements do not match original vector's elements
+        result = false;
+    } else if (size != copy->size) {
+        // Failed to correctly set the vector size
+        LOG(&global_logger,
+            LOG_LEVEL_DEBUG,
+            "Failed to set vector size: expected %zu, got %zu instead.",
+            size,
+            copy->size);
+        result = false;
     }
 
     // Cleanup
@@ -91,7 +88,50 @@ bool test_vector_deep_copy(void) {
 }
 
 bool test_vector_shallow_copy(void) {
-    bool result = true;
+    bool   result = true;
+    size_t size   = 2; // Example size
+
+    // Create an original vector and set some values
+    struct Vector* original = vector_create(size);
+    original->elements[0]   = 10;
+    original->elements[1]   = 20;
+
+    // Perform a shallow copy
+    struct Vector* shallow_copy = vector_shallow_copy(original);
+
+    // Test if the shallow copy was successful
+    if (NULL == shallow_copy) {
+        result = false;
+        LOG(&global_logger, LOG_LEVEL_DEBUG, "Shallow copy creation failed.\n");
+    } else if (shallow_copy->elements != original->elements) {
+        // Check if both vectors share the same elements array
+        result = false;
+        LOG(&global_logger,
+            LOG_LEVEL_DEBUG,
+            "Elements array not shared between original and shallow copy.\n");
+    } else if (size != shallow_copy->size) {
+        // Check if both vectors share the same size
+        result = false;
+        LOG(&global_logger,
+            LOG_LEVEL_DEBUG,
+            "Vectors original->size(%zu) does not equal shallow_copy->size(%zu).\n");
+    }
+
+    // NOTE: Separate concerns for testing modifications
+    // Modify the original vector and check if changes reflect in the shallow copy
+    original->elements[0] = 30; // Change the value
+    if (shallow_copy->elements[0] != 30) {
+        result = false;
+        LOG(&global_logger,
+            LOG_LEVEL_DEBUG,
+            "Changes in original vector not reflected in shallow copy.\n");
+    }
+
+    // Cleanup: Only destroy the original vector since shallow_copy shares the same elements array
+    vector_destroy(original);
+    // Note: Depending on your implementation, you might need to free shallow_copy itself, just not
+    // its elements array
+    free(shallow_copy); // Assuming shallow_copy is just a wrapper without its own elements array
 
     printf("%s", result ? "." : "x");
     return result; // Return the actual result of the test
