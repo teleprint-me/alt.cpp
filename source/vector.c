@@ -49,27 +49,41 @@ struct Vector* vector_create(size_t size) {
     return vector;
 }
 
-struct Vector* vector_deep_copy(const float elements[], size_t size) {
-    struct Vector* deep_copy = vector_create(size);
+struct Vector* vector_deep_copy(const struct Vector* vector) {
+    struct Vector* deep_copy = vector_create(vector->size);
     if (NULL == deep_copy) {
         return NULL;
     }
 
-    for (size_t i = 0; i < size; ++i) {
-        deep_copy->elements[i] = elements[i];
+    for (size_t i = 0; i < vector->size; ++i) {
+        deep_copy->elements[i] = vector->elements[i];
     }
 
     return deep_copy;
 }
 
-struct Vector* vector_clone(const struct Vector* vector) {
-    // note: this is just a convenience function for vector_deep_copy
-    struct Vector* clone = vector_deep_copy(vector->elements, vector->size);
-    if (NULL == clone) {
+struct Vector* vector_shallow_copy(const struct Vector* vector) {
+    if (NULL == vector) {
         return NULL;
     }
 
-    return clone;
+    // Allocate memory for the new Vector structure only, not for its elements
+    struct Vector* new_vector = (struct Vector*) malloc(sizeof(struct Vector));
+    if (NULL == new_vector) { // If no memory was allocated
+        LOG(&global_logger,
+            LOG_LEVEL_ERROR,
+            "Failed to allocate %zu bytes to struct Vector.\n",
+            sizeof(struct Vector));
+        return NULL; // Early return if vector creation failed
+    }
+
+    // Copy all fields except elements (pointer to an array)
+    new_vector->size = vector->size;
+
+    // Assign the existing pointer to the new Vector structure
+    new_vector->elements = vector->elements;
+
+    return new_vector;
 }
 
 bool vector_destroy(struct Vector* vector) {

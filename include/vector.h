@@ -86,31 +86,30 @@ struct Vector {
 struct Vector* vector_create(size_t size);
 
 /**
- * @brief Creates a deep copy of a vector with the specified elements and size.
+ * @brief Creates a deep copy of the input vector.
  *
- * The `vector_deep_copy` function creates a new vector with the same size as the input elements
- * array and copies the contents of the array into the newly allocated vector. If memory allocation
- * fails, an error message is logged, and the function returns NULL.
+ * This function allocates memory for a new vector and copies the elements of the input vector into
+ * the new memory space. The new vector is completely independent of the input vector and can be
+ * modified without affecting the original vector.
  *
- * @param elements An array containing the elements of the vector to be copied.
- * @param size The size of the vector to be copied.
- * @return A pointer to the newly created deep copy of the vector on success, or NULL if memory
- * allocation failed.
+ * @param vector The vector to be copied.
+ * @return A pointer to the newly created deep copy of the input vector. Returns NULL if memory
+ * allocation fails or if the input vector is NULL.
  */
-struct Vector* vector_deep_copy(const float elements[], size_t size);
+struct Vector* vector_deep_copy(const struct Vector* vector);
 
 /**
- * @brief Creates a deep copy of an existing vector.
+ * @brief Creates a shallow copy of the input vector.
  *
- * The `vector_clone` function creates a deep copy of the input vector by calling `vector_deep_copy`
- * with the elements and size of the input vector. If memory allocation fails during the cloning
- * process, an error message is logged, and the function returns NULL.
+ * This function creates a new vector structure and assigns the pointer to the elements array of
+ * the input vector to the new vector. As a result, both the original and copied vectors share the
+ * same underlying elements array. Modifying the elements of one vector will affect the other.
  *
- * @param vector A pointer to the vector to be cloned.
- * @return A pointer to the newly created deep copy of the vector on success, or NULL if memory
- * allocation failed.
+ * @param vector The vector to be copied.
+ * @return A pointer to the newly created shallow copy of the input vector. Returns NULL if memory
+ * allocation fails or if the input vector is NULL.
  */
-struct Vector* vector_clone(const struct Vector* vector);
+struct Vector* vector_shallow_copy(const struct Vector* vector);
 
 /**
  * @brief Destroys a vector and frees its allocated memory.

@@ -53,13 +53,44 @@ bool test_vector_create(void) {
 }
 
 bool test_vector_deep_copy(void) {
-    bool result = true;
+    bool   result = true; // test result status
+    size_t size   = 2;    // number of elements
+
+    // Assuming vector_deep_copy takes a pointer to a float array and size
+    struct Vector* original = vector_create(size);
+    original->elements[0]   = 1;
+    original->elements[1]   = 3;
+
+    struct Vector* copy = vector_deep_copy(original);
+
+    if (NULL == copy) {
+        // vector_deep_copy failed to allocate memory for vector
+        result = false;
+    } else {
+        if (copy->elements[0] != 1 || copy->elements[1] != 3) {
+            // Elements do not match original vector's elements
+            result = false;
+        }
+        if (size != copy->size) {
+            // Failed to correctly set the vector size
+            LOG(&global_logger,
+                LOG_LEVEL_DEBUG,
+                "Failed to set vector size: expected %zu, got %zu instead.",
+                size,
+                copy->size);
+            result = false;
+        }
+    }
+
+    // Cleanup
+    vector_destroy(original); // Assuming this is how you'd free the original vector
+    vector_destroy(copy);     // Free the copied vector
 
     printf("%s", result ? "." : "x");
     return result; // Return the actual result of the test
 }
 
-bool test_vector_clone(void) {
+bool test_vector_shallow_copy(void) {
     bool result = true;
 
     printf("%s", result ? "." : "x");
