@@ -169,6 +169,44 @@ bool test_vector_destroy(void) {
     return result; // Return the actual result of the test
 }
 
+bool test_vector_magnitude(void) {
+    bool  result    = true;
+    float tolerance = 0.0001; // Tolerance for floating-point comparison
+
+    // Create a 2-dimensional vector for a 3-4-5 triangle
+    struct Vector* vector = vector_create(2);
+    if (NULL == vector) {
+        result = false;
+        LOG(&global_logger, LOG_LEVEL_ERROR, "Failed to create vector.\n");
+    } else {
+        // Setting vector elements to (3, 4)
+        vector->elements[0] = 3;
+        vector->elements[1] = 4;
+
+        // Calculate the magnitude
+        float magnitude = vector_magnitude(vector);
+
+        // The expected magnitude is 5.0 for a 3-4-5 Pythagorean triple
+        float expected_magnitude = 5.0f;
+
+        // Check if the calculated magnitude is within the tolerance of the expected magnitude
+        if (fabs(magnitude - expected_magnitude) > tolerance) {
+            LOG(&global_logger,
+                LOG_LEVEL_ERROR,
+                "Magnitude calculation error: expected %f, got %f\n",
+                expected_magnitude,
+                magnitude);
+            result = false;
+        }
+
+        // Clean up
+        vector_destroy(vector);
+    }
+
+    printf("%s", result ? "." : "x");
+    return result;
+}
+
 bool test_elementwise_operation(
     const char* operation_label,
     // Function pointer for expected result calculation
@@ -231,6 +269,9 @@ int main(void) {
     result &= test_vector_destroy();
     result &= test_elementwise_operation("add", vector_add, add);
     result &= test_elementwise_operation("subtract", vector_subtract, subtract);
+    result &= test_elementwise_operation("multiply", vector_multiply, multiply);
+    result &= test_elementwise_operation("divide", vector_divide, divide);
+    result &= test_vector_magnitude();
 
     if (result) {
         printf("All tests passed.\n");
