@@ -179,6 +179,62 @@ struct Vector* vector_scale(struct Vector* vector, float scalar, bool inplace) {
     return scaled_vector;
 }
 
+float vector_mean(struct Vector* vector) {
+    if (NULL == vector || 0 == vector->size) {
+        return NAN; // Return NAN for invalid input
+    }
+
+    float sum = 0.0f;
+    for (size_t i = 0; i < vector->size; i++) {
+        if (isnan(vector->elements[i])) {
+            // Log error and return NAN if any element is NaN
+            LOG(&global_logger, LOG_LEVEL_ERROR, "NaN element found at index %zu.\n", i);
+            return NAN;
+        }
+        sum += vector->elements[i];
+    }
+
+    return sum / vector->size; // Return the mean
+}
+
+struct Vector* vector_clip(struct Vector* vector, float min, float max, bool inplace) {
+    if (NULL == vector || 0 == vector->size) {
+        return NULL;
+    }
+
+    if (inplace) {
+        for (size_t i = 0; i < vector->size; i++) {
+            if (vector->elements[i] < min) {
+                vector->elements[i] = min;
+            }
+            if (vector->elements[i] > max) {
+                vector->elements[i] = max;
+            }
+        }
+
+        return vector; // return as soon as possible
+    }
+
+    // create a vector if !inplace
+    struct Vector* clipped_vector = vector_create(vector->size);
+    if (NULL == clipped_vector) {
+        return NULL; // NOTE: we can return and not log because vector_create logs the error for us
+    }
+
+    for (size_t i = 0; i < vector->size; i++) {
+        if (vector->elements[i] < min) {
+            clipped_vector->elements[i] = min;
+        } else if (vector->elements[i] > max) {
+            clipped_vector->elements[i] = max;
+        } else {
+            clipped_vector->elements[i] = vector->elements[i];
+        }
+    }
+
+    // Return the newly created clipped vector
+    return clipped_vector;
+}
+
 // Helper function for element-wise operations
 float add(float x, float y) {
     return x + y;
@@ -297,9 +353,9 @@ struct Vector* vector_cross_product(const struct Vector* a, const struct Vector*
 }
 
 // Coordinate transformation functions (prototypes to be defined)
-struct Vector* polar_to_cartesian(const struct Vector* polar_vector) {}
+struct Vector* vector_polar_to_cartesian(const struct Vector* polar_vector) {}
 
-struct Vector* cartesian_to_polar(const struct Vector* cartesian_vector) {}
+struct Vector* vector_cartesian_to_polar(const struct Vector* cartesian_vector) {}
 
 // Function to calculate the softmax of a vector
 struct Vector* vector_softmax(const struct Vector* vector) {
@@ -329,4 +385,47 @@ struct Vector* vector_softmax(const struct Vector* vector) {
     // Clean up and return the result
     vector_destroy(exponents);
     return output;
+}
+
+float vector_cross_entropy(
+    const struct Vector* prediction,
+    const struct Vector* target,
+    float                epsilon,
+    float                normalization_factor
+) {
+    if (prediction == NULL || target == NULL) {
+        LOG(&global_logger, LOG_LEVEL_ERROR, "prediction and target cannot be NULL.\n");
+        return NAN; // not a number
+    }
+
+    if (prediction->size != target->size) {
+        LOG(&global_logger,
+            LOG_LEVEL_ERROR,
+            "Vector dimensions do not match. prediction->size(%zu) and "
+            "target->size(%zu).\n",
+            prediction->size,
+            target->size);
+    }
+
+    float total_loss = 0.0f;
+
+    for (size_t i = 0; i < prediction->size; ++i) {
+        if (prediction->elements[i] <= 0.0f || target->elements[i] <= 0.0f
+            || prediction->elements[i] > 1.0f || target->elements[i] > 1.0f) {
+            LOG(&global_logger,
+                LOG_LEVEL_ERROR,
+                "Invalid input to cross entropy function: element at index %zu out of range.\n",
+                i);
+            return NAN; // not a number
+        }
+
+        float prediction_log  = logf(prediction->elements[i] + epsilon) * prediction->elements[i];
+        float target_log      = logf(target->elements[i]) * target->elements[i];
+        float elemental_loss  = prediction_log + target_log;
+        total_loss           += elemental_loss;
+    }
+
+    // Normalize the loss by dividing it by the number of elements in the vectors
+    float normalization_factor = powf(normalization_factor, (float) (prediction->size));
+    return -total_loss / normalization_factor;
 }
