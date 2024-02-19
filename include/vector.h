@@ -192,6 +192,28 @@ float vector_distance(const struct Vector* a, const struct Vector* b);
  */
 struct Vector* vector_scale(struct Vector* vector, float scalar, bool inplace);
 
+/**
+ * @brief Calculates the mean (average) of the elements in a vector.
+ *
+ * @param vector The vector whose mean is to be calculated.
+ * @return The mean of the vector's elements. Returns NAN if the vector is NULL, empty, or contains
+ * invalid (NaN) elements.
+ */
+float vector_mean(struct Vector* vector);
+
+/**
+ * @brief Clips the elements of a vector to be within the specified range.
+ *
+ * @param vector The input vector to be clipped.
+ * @param min The minimum value for clipping.
+ * @param max The maximum value for clipping.
+ * @param inplace If true, performs the clipping operation in place on the input vector.
+ *                If false, creates a new vector with clipped elements.
+ * @return A pointer to the clipped vector if inplace is false, otherwise returns the input vector.
+ *         Returns NULL if the input vector is NULL.
+ */
+struct Vector* vector_clip(struct Vector* vector, float min, float max, bool inplace);
+
 // Element wise operations
 
 // Helper functions for element-wise operations
@@ -304,6 +326,31 @@ struct Vector* vector_cartesian_to_polar(const struct Vector* cartesian_vector);
  */
 struct Vector* vector_softmax(const struct Vector* vector);
 
-float vector_cross_entropy(const struct Vector* prediction, const struct Vector* target);
+/**
+ * @brief Calculates the cross-entropy loss between two probability distributions.
+ *
+ * This function computes the cross-entropy loss between the predicted and target probability
+ * distributions provided as vectors. It incorporates numerical stability enhancements through
+ * an epsilon value and offers customizable normalization.
+ *
+ * Parameters:
+ * @param prediction: The predicted probability distribution.
+ * @param target: The target probability distribution.
+ * @param epsilon: A small value added to the log function to prevent log(0). Default is 1e-10f if
+ * NAN is passed.
+ * @param normalization_factor: Controls the loss normalization. Special values (e.g., 1.0) may
+ * alter the normalization behavior. Default is 2.0f is NAN is passed.
+ *
+ * @return The cross-entropy loss as a float. Returns NAN for invalid inputs or internal errors.
+ *
+ * @note Both prediction and target vectors should contain values in the [0, 1] range.
+ * @note This function logs errors for out-of-range values and returns NaN as a result.
+ */
+float vector_cross_entropy(
+    const struct Vector* prediction,
+    const struct Vector* target,
+    float                epsilon,
+    float                normalization_factor
+);
 
 #endif // ALT_VECTOR_H
