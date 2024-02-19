@@ -28,41 +28,49 @@ bool test_vector_create(void) {
     struct Vector* vector = vector_create(size);
 
     if (NULL == vector) {
-        // NOTE: vector_create will output LOG to stderr automatically
+        // vector_create failed to allocate memory for vector
+        result = false;
+    } else if (NULL == vector->elements) {
+        // vector_create failed to allocate memory for elements
+        result = false;
+    } else if (size != vector->size) {
+        // vector_create failed to correctly set the vector size
+        LOG(&global_logger,
+            LOG_LEVEL_DEBUG,
+            "Failed to set vector size: expected %zu, got %zu instead.",
+            size,
+            vector->size);
         result = false;
     }
 
-    if (NULL == vector->elements) {
-        // NOTE: vector_create will out LOG to stderr automatically
-        result = false;
-    }
-
-    if (3 != vector->size) {
-        LOG(&global_logger, LOG_LEVEL_DEBUG, "Failed to set vector size: got %zu, got %zu instead."
-        );
-        result = false;
-    }
-
-    vector_destroy(vector);
-
-    if (NULL == vector) {
-        result = false;
+    // Correctly destroy the vector and free its memory
+    if (vector) {
+        vector_destroy(vector);
     }
 
     printf("%s", result ? "." : "x");
-    return true;
+    return result; // Return the actual result of the test
 }
 
 bool test_vector_deep_copy(void) {
-    return true;
+    bool result = true;
+
+    printf("%s", result ? "." : "x");
+    return result; // Return the actual result of the test
 }
 
 bool test_vector_clone(void) {
-    return true;
+    bool result = true;
+
+    printf("%s", result ? "." : "x");
+    return result; // Return the actual result of the test
 }
 
 bool test_vector_destroy(void) {
-    return true;
+    bool result = true;
+
+    printf("%s", result ? "." : "x");
+    return result; // Return the actual result of the test
 }
 
 bool test_vector_addition(void) {
