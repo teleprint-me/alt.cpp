@@ -10,7 +10,7 @@ CXXFLAGS = -Wall -Wextra -std=c++17 -I./imgui -I./imgui/backends
 LDFLAGS = -lpthread -lglfw -lGLEW -lGL -lvulkan
 
 # Target executable name
-EXECUTABLE = alt  # alt is the name of the application
+EXECUTABLE = alt.bin  # alt is the name of the application
 
 # Explicit source files
 
