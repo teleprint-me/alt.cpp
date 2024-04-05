@@ -1,7 +1,7 @@
 /*
  * Copyright © 2024 Austin Berrio
  *
- * alt.cpp/source/alt.cpp
+ * alt.cpp/source/plot.cpp
  */
 
 #include "../imgui/imgui.h"
@@ -52,7 +52,7 @@ int main() {
             // double *, int, double, double)
             ImPlot::PlotLine(
                 "Linear Equation",
-                [](double x, void* data) { return linear(x, *(double*)data, 0); },
+                [](double x, void* data) { return linear(x, *(double*) data, 0); },
                 &m,
                 1,
                 ymin,
