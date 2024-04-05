@@ -159,6 +159,7 @@
     "variant": "cpp",
     "log.h": "c",
     "pthread.h": "c",
-    "logger.h": "c"
+    "logger.h": "c",
+    "matrix.h": "c"
   }
 }
