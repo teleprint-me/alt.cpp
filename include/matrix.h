@@ -3,23 +3,10 @@
  *
  * Copyright © 2024 Austin Berrio
  *
- * Overview:
- * This library provides a comprehensive and efficient Vector and Matrix API designed for high
- * performance and ease of use in scientific computing, data analysis, and machine learning
- * applications. It emphasizes simplicity, speed, and flexibility, leveraging pure C for core
- * operations to ensure maximum compatibility and performance. Advanced mathematical operations and
- * transformations are supported with minimal dependency on external libraries, adhering to a
- * philosophy of lightweight and focused design.
- *
- * Note:
- * - Prefixing related objects, functions, etc., has been adopted to enhance code readability and
- * assist with autocomplete features in various development environments. This convention is
- * intended to streamline development workflows and facilitate quick integration into existing
- * projects.
- *
- * This API stands as a testament to the power and flexibility of C, aiming to provide developers
- * with a robust toolkit for tackling a broad spectrum of computational challenges.
- *
+ * This library provides a Vector and Matrix API designed for high performance and ease of use in
+ * scientific computing, data analysis, and machine learning applications. It leverages pure C for
+ * core operations to ensure maximum compatibility and performance with a focus on simplicity,
+ * speed, and flexibility.
  */
 #ifndef ALT_MATRIX_H
 #define ALT_MATRIX_H
@@ -35,31 +22,77 @@
 // Structures
 
 /**
- * @brief Represents a matrix in n-dimensional space.
+ * Represents a matrix in n-dimensional space, where each row is a vector.
+ * Ensures that all rows (vectors) have the same length to maintain consistency.
  */
-struct Matrix {
-    // We have n (rows) x m (cols)
-    // e.g. matrix = {{2, 2}, {1, 3}}; // n x m = 2 x 2 dimensions
-    // need to track the number rows and cols
-    // n (rows) represents the vectors the matrix
-    // m (cols) resresents the y axis of the matrix?
-    // problems arise with higher dimensions? How do account for differing dimensionialities?
-    struct Vector* rows;
-
-    size_t n_cols;
-    // NOTE: Each vector has it's own size,
-    // e.g. `vector->size` returns the number of elements in `vector->elements`.
-    size_t n_rows;
-};
+typedef struct {
+    struct Vector* rows;   // Pointer to an array of Vector structures representing rows
+    size_t         n_rows; // Number of rows in the matrix
+    size_t         n_cols; // Number of columns in each row (vector)
+} Matrix;
 
 // Life-cycle operations
 
-struct Matrix* matrix_create(size_t n_rows, size_t n_cols);
+/**
+ * Creates a new matrix with the specified number of rows and columns.
+ * Initializes all elements to zero.
+ *
+ * @param n_rows Number of rows.
+ * @param n_cols Number of columns.
+ * @return Pointer to the newly created matrix or NULL if allocation fails.
+ */
+Matrix* matrix_create(size_t n_rows, size_t n_cols);
 
-struct Matrix* matrix_deep_copy(const struct Matrix* matrix);
+/**
+ * Creates a deep copy of a given matrix, duplicating all its elements.
+ *
+ * @param matrix Pointer to the matrix to be copied.
+ * @return Pointer to the new matrix copy or NULL if allocation fails.
+ */
+Matrix* matrix_deep_copy(const Matrix* matrix);
 
-struct Matrix* matrix_shallow_copy(const struct Matrix* matrix);
+/**
+ * Creates a shallow copy of a given matrix. Only the matrix structure is duplicated, not the data.
+ *
+ * @param matrix Pointer to the matrix to be copied.
+ * @return Pointer to the new matrix structure or NULL if allocation fails.
+ */
+Matrix* matrix_shallow_copy(const Matrix* matrix);
 
-bool matrix_destroy(struct Matrix* matrix);
+/**
+ * Destroys a matrix, freeing its memory. Safely handles NULL pointers.
+ *
+ * @param matrix Pointer to the matrix to be destroyed.
+ * @return true if the operation is successful, false otherwise.
+ */
+bool matrix_destroy(Matrix* matrix);
+
+// Additional operations (placeholders for future implementation)
+
+/**
+ * Adds two matrices and returns the result.
+ *
+ * @param a Pointer to the first matrix.
+ * @param b Pointer to the second matrix.
+ * @return Pointer to the result matrix or NULL if the operation fails.
+ */
+Matrix* matrix_add(const Matrix* a, const Matrix* b);
+
+/**
+ * Multiplies two matrices and returns the result.
+ *
+ * @param a Pointer to the first matrix.
+ * @param b Pointer to the second matrix.
+ * @return Pointer to the result matrix or NULL if the operation fails.
+ */
+Matrix* matrix_multiply(const Matrix* a, const Matrix* b);
+
+/**
+ * Transposes a matrix and returns the result.
+ *
+ * @param matrix Pointer to the matrix to be transposed.
+ * @return Pointer to the transposed matrix or NULL if the operation fails.
+ */
+Matrix* matrix_transpose(const Matrix* matrix);
 
 #endif // ALT_MATRIX_H
