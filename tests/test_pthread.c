@@ -1,6 +1,7 @@
 /*
  * tests/test_pthread.c
  */
+#include "../include/logger.h"
 #include "../include/vector.h"
 
 #include <pthread.h>
