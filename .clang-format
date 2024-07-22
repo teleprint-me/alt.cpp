@@ -72,7 +72,6 @@ BraceWrapping:
   BeforeCatch: true
   BeforeElse: true
   IndentBraces: false
-InsertBraces: false # Warn: Setting this option to true could break code
 
 # Breaking settings
 BreakBeforeBinaryOperators: true
@@ -88,7 +87,7 @@ AllowAllParametersOfDeclarationOnNextLine: true
 InsertTrailingCommas: Wrapped
 
 # Miscellaneous insertions
-InsertBraces: true
+InsertBraces: true  # Warn: Setting this option to true could break code
 InsertNewlineAtEOF: true
 SeparateDefinitionBlocks: Always
 
