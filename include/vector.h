@@ -84,9 +84,8 @@ float scalar_divide(float x, float y);
  * @param operation A pointer to the function performing the element-wise operation
  * @return A pointer to the resulting vector
  */
-vector_t* perform_elementwise_scalar_operation(
-    const vector_t* a, const float b, float (*operation)(float, float)
-);
+vector_t*
+scalar_elementwise_operation(const vector_t* a, const float b, float (*operation)(float, float));
 
 // Scalar based vector operations
 
@@ -137,7 +136,7 @@ vector_t* vector_scalar_divide(const vector_t* a, const float b);
  * @param operation A pointer to the function performing the element-wise operation
  * @return A pointer to the resulting vector
  */
-vector_t* perform_elementwise_vector_operation(
+vector_t* vector_elementwise_operation(
     const vector_t* a, const vector_t* b, float (*operation)(float, float)
 );
 
