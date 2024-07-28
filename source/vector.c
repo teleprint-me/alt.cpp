@@ -1,7 +1,7 @@
 /**
  * Copyright © 2024 Austin Berrio
  *
- * @file include/vector.h
+ * @file source/vector.c
  *
  * @brief A simple and easy-to-use Vector API in C
  *
