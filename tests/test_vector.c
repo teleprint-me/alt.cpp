@@ -1,5 +1,5 @@
-/*
- * alt.cpp/tests/test_vector.c
+/**
+ * @file tests/test_vector.c
  */
 
 #include "../include/logger.h"
