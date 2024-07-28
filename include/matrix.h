@@ -1,47 +1,67 @@
-/*
- * alt.cpp/include/matrix.h
- *
+/**
  * Copyright © 2024 Austin Berrio
  *
- * This library provides a Vector and Matrix API designed for high performance and ease of use in
- * scientific computing, data analysis, and machine learning applications. It leverages pure C for
- * core operations to ensure maximum compatibility and performance with a focus on simplicity,
- * speed, and flexibility.
+ * @file include/matrix.h
+ *
+ * @brief A simple and easy to use Matrix API
+ *
+ * This library provides a Matrix API designed for high performance
+ * and ease of use in scientific computing, data analysis, and machine learning
+ * applications. It leverages pure C for core operations to ensure maximum
+ * compatibility and performance with a focus on simplicity, speed, and
+ * flexibility.
+ *
+ * Only pure C is used with minimal dependencies on external libraries.
  */
+
 #ifndef ALT_MATRIX_H
 #define ALT_MATRIX_H
 
-#include "vector.h"
-
-#include <math.h>
 #include <stdbool.h>
-#include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 
 // Structures
 
 /**
- * Represents a matrix in n-dimensional space, where each row is a vector.
- * Ensures that all rows (vectors) have the same length to maintain consistency.
+ * @brief A structure representing a 2-dimensional matrix.
+ *
+ * A matrix is a rectangular array of rows and columns representing a
+ * 2-dimensional space. This structure stores the number of rows and columns,
+ * along with a two-dimensional dynamic array of floating-point values, which
+ * represent the components of the matrix.
+ *
+ * @param elements A two-dimensional pointer to an array of floats, representing
+ * the matrix elements.
+ * @param columns  The number of columns (width) of the matrix.
+ * @param rows     The number of rows (height) of the matrix.
  */
 typedef struct {
-    struct Vector* rows;   // Pointer to an array of Vector structures representing rows
-    size_t         n_rows; // Number of rows in the matrix
-    size_t         n_cols; // Number of columns in each row (vector)
-} Matrix;
+    float**
+        elements;   ///< Two-dimensional array representing the matrix elements.
+    size_t columns; ///< The number of columns (width) of the matrix.
+    size_t rows;    ///< The number of rows (height) of the matrix.
+} matrix_t;
 
 // Life-cycle operations
 
 /**
- * Creates a new matrix with the specified number of rows and columns.
+ * @brief Creates a new matrix with the specified number of rows and columns.
  * Initializes all elements to zero.
  *
- * @param n_rows Number of rows.
- * @param n_cols Number of columns.
+ * @param cols Number of columns.
+ * @param rows Number of rows.
+ *
  * @return Pointer to the newly created matrix or NULL if allocation fails.
  */
-Matrix* matrix_create(size_t n_rows, size_t n_cols);
+matrix_t* matrix_create(size_t columns, size_t rows);
+
+/**
+ * Free its memory. Safely handles NULL pointers.
+ *
+ * @param matrix Pointer to the matrix to be destroyed.
+ * @return true if the operation is successful, false otherwise.
+ */
+void matrix_free(matrix_t* matrix);
 
 /**
  * Creates a deep copy of a given matrix, duplicating all its elements.
@@ -49,23 +69,16 @@ Matrix* matrix_create(size_t n_rows, size_t n_cols);
  * @param matrix Pointer to the matrix to be copied.
  * @return Pointer to the new matrix copy or NULL if allocation fails.
  */
-Matrix* matrix_deep_copy(const Matrix* matrix);
+matrix_t* matrix_deep_copy(const matrix_t* matrix);
 
 /**
- * Creates a shallow copy of a given matrix. Only the matrix structure is duplicated, not the data.
+ * Creates a shallow copy of a given matrix. Only the matrix structure is
+ * duplicated, not the data.
  *
  * @param matrix Pointer to the matrix to be copied.
  * @return Pointer to the new matrix structure or NULL if allocation fails.
  */
-Matrix* matrix_shallow_copy(const Matrix* matrix);
-
-/**
- * Destroys a matrix, freeing its memory. Safely handles NULL pointers.
- *
- * @param matrix Pointer to the matrix to be destroyed.
- * @return true if the operation is successful, false otherwise.
- */
-bool matrix_destroy(Matrix* matrix);
+matrix_t* matrix_shallow_copy(const matrix_t* matrix);
 
 // Additional operations (placeholders for future implementation)
 
@@ -76,7 +89,7 @@ bool matrix_destroy(Matrix* matrix);
  * @param b Pointer to the second matrix.
  * @return Pointer to the result matrix or NULL if the operation fails.
  */
-Matrix* matrix_add(const Matrix* a, const Matrix* b);
+matrix_t* matrix_add(const matrix_t* a, const matrix_t* b);
 
 /**
  * Multiplies two matrices and returns the result.
@@ -85,7 +98,7 @@ Matrix* matrix_add(const Matrix* a, const Matrix* b);
  * @param b Pointer to the second matrix.
  * @return Pointer to the result matrix or NULL if the operation fails.
  */
-Matrix* matrix_multiply(const Matrix* a, const Matrix* b);
+matrix_t* matrix_multiply(const matrix_t* a, const matrix_t* b);
 
 /**
  * Transposes a matrix and returns the result.
@@ -93,6 +106,6 @@ Matrix* matrix_multiply(const Matrix* a, const Matrix* b);
  * @param matrix Pointer to the matrix to be transposed.
  * @return Pointer to the transposed matrix or NULL if the operation fails.
  */
-Matrix* matrix_transpose(const Matrix* matrix);
+matrix_t* matrix_transpose(const matrix_t* matrix);
 
 #endif // ALT_MATRIX_H
