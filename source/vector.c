@@ -24,6 +24,17 @@
 #include <string.h>
 
 // Vector lifecycle management
+
+/**
+ * @brief Create a new N-dimensional vector
+ *
+ * This function dynamically allocates memory and initializes a new vector with
+ * the specified number of dimensions. The values in the vector are set to zero
+ * by default.
+ *
+ * @param dimensions Number of dimensions for the vector
+ * @return A pointer to the newly created vector
+ */
 vector_t* vector_create(size_t dimensions) {
     vector_t* vector = (vector_t*) malloc(sizeof(vector_t));
     if (NULL == vector) { // If no memory was allocated
@@ -53,16 +64,15 @@ vector_t* vector_create(size_t dimensions) {
     return vector;
 }
 
-void vector_free(vector_t* vector) {
-    if (vector->elements) {
-        free(vector->elements);
-    }
-
-    if (vector) {
-        free(vector);
-    }
-}
-
+/**
+ * @brief Copy a given N-dimensional vector
+ *
+ * @note This function creates a deep copy of the input vector by allocating new
+ * memory and duplicating its contents.
+ *
+ * @param vector Input vector
+ * @return A pointer to the deep copied vector
+ */
 vector_t* vector_deep_copy(const vector_t* vector) {
     vector_t* deep_copy = vector_create(vector->dimensions);
     if (NULL == deep_copy) {
@@ -76,6 +86,15 @@ vector_t* vector_deep_copy(const vector_t* vector) {
     return deep_copy;
 }
 
+/**
+ * @brief Create a shallow copy of an N-dimensional vector
+ *
+ * @note This function returns a pointer to the same allocated memory as the
+ * input vector, effectively creating a reference (shallow) copy.
+ *
+ * @param vector Input vector
+ * @return A pointer to the shallow copied vector
+ */
 vector_t* vector_shallow_copy(const vector_t* vector) {
     if (NULL == vector) {
         return NULL;
@@ -98,6 +117,24 @@ vector_t* vector_shallow_copy(const vector_t* vector) {
     new_vector->elements = vector->elements;
 
     return new_vector;
+}
+
+/**
+ * @brief Free an allocated N-dimensional vector
+ *
+ * This function deallocates memory associated with a given vector, releasing
+ * any resources used during its creation.
+ *
+ * @param vector A pointer to the vector to be freed
+ */
+void vector_free(vector_t* vector) {
+    if (vector->elements) {
+        free(vector->elements);
+    }
+
+    if (vector) {
+        free(vector);
+    }
 }
 
 // Vector mathematical operations

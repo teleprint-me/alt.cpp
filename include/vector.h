@@ -51,6 +51,28 @@ typedef struct {
 vector_t* vector_create(size_t dimensions);
 
 /**
+ * @brief Copy a given N-dimensional vector
+ *
+ * @note This function creates a deep copy of the input vector by allocating new
+ * memory and duplicating its contents.
+ *
+ * @param vector Input vector
+ * @return A pointer to the deep copied vector
+ */
+vector_t* vector_deep_copy(const vector_t* vector);
+
+/**
+ * @brief Create a shallow copy of an N-dimensional vector
+ *
+ * @note This function returns a pointer to the same allocated memory as the
+ * input vector, effectively creating a reference (shallow) copy.
+ *
+ * @param vector Input vector
+ * @return A pointer to the shallow copied vector
+ */
+vector_t* vector_shallow_copy(const vector_t* vector);
+
+/**
  * @brief Free an allocated N-dimensional vector
  *
  * This function deallocates memory associated with a given vector, releasing
@@ -186,28 +208,6 @@ vector_t* vector_vector_multiply(const vector_t* a, const vector_t* b);
 vector_t* vector_vector_divide(const vector_t* a, const vector_t* b);
 
 // Common vector operations
-
-/**
- * @brief Copy a given N-dimensional vector
- *
- * @note This function creates a deep copy of the input vector by allocating new
- * memory and duplicating its contents.
- *
- * @param vector Input vector
- * @return A pointer to the deep copied vector
- */
-vector_t* vector_deep_copy(const vector_t* vector);
-
-/**
- * @brief Create a shallow copy of an N-dimensional vector
- *
- * @note This function returns a pointer to the same allocated memory as the
- * input vector, effectively creating a reference (shallow) copy.
- *
- * @param vector Input vector
- * @return A pointer to the shallow copied vector
- */
-vector_t* vector_shallow_copy(const vector_t* vector);
 
 /**
  * @brief Determine the magnitude or length of an N-dimensional vector
