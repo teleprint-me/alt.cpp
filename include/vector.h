@@ -5,10 +5,11 @@
  *
  * @brief A simple and easy-to-use Vector API in C
  *
- * This header file provides an implementation for basic mathematical operations on N-dimensional
- * vectors, including creation, destruction, element-wise functions, scalar-based functions,
- * vector-based functions, common vector operations, special vector operations, and conversion
- * between polar and cartesian coordinates.
+ * This header file provides an implementation for basic mathematical operations
+ * on N-dimensional vectors, including creation, destruction, element-wise
+ * functions, scalar-based functions, vector-based functions, common vector
+ * operations, special vector operations, and conversion between polar and
+ * cartesian coordinates.
  *
  * Only pure C is used with minimal dependencies on external libraries.
  */
@@ -24,22 +25,25 @@
 /**
  * @brief A structure representing an N-dimensional vector.
  *
- * This structure stores the number of dimensions and a dynamic array of floating-point values,
- * which represent the components of the vector in each dimension.
+ * This structure stores the number of dimensions and a dynamic array of
+ * floating-point values, which represent the components of the vector in each
+ * dimension.
  *
  * @param elements   One-dimensional array of elements representing a vector.
  * @param dimensions The number of dimensions for the vector.
  */
 typedef struct {
-    float* elements;   ///< One-dimensional array of elements representing a vector.
+    float*
+        elements; ///< One-dimensional array of elements representing a vector.
     size_t dimensions; ///< The number of dimensions for the vector.
 } vector_t;
 
 /**
  * @brief Create a new N-dimensional vector
  *
- * This function dynamically allocates memory and initializes a new vector with the specified number
- * of dimensions. The values in the vector are set to zero by default.
+ * This function dynamically allocates memory and initializes a new vector with
+ * the specified number of dimensions. The values in the vector are set to zero
+ * by default.
  *
  * @param dimensions Number of dimensions for the vector
  * @return A pointer to the newly created vector
@@ -49,8 +53,8 @@ vector_t* vector_create(size_t dimensions);
 /**
  * @brief Free an allocated N-dimensional vector
  *
- * This function deallocates memory associated with a given vector, releasing any resources used
- * during its creation.
+ * This function deallocates memory associated with a given vector, releasing
+ * any resources used during its creation.
  *
  * @param vector A pointer to the vector to be freed
  */
@@ -61,8 +65,8 @@ void vector_free(vector_t* vector);
 /**
  * @brief Helper functions for element-wise operations
  *
- * These helper functions perform basic arithmetic on two floating-point values and return the
- * result.
+ * These helper functions perform basic arithmetic on two floating-point values
+ * and return the result.
  *
  * @param x First operand
  * @param y Second operand
@@ -76,16 +80,18 @@ float scalar_divide(float x, float y);
 /**
  * @brief Executor for element-wise vector-to-scalar functions
  *
- * This function applies a given operation to each corresponding pair of elements in two vectors and
- * returns the resulting vector.
+ * This function applies a given operation to each corresponding pair of
+ * elements in two vectors and returns the resulting vector.
  *
  * @param a First input vector
  * @param b Second input scalar
- * @param operation A pointer to the function performing the element-wise operation
+ * @param operation A pointer to the function performing the element-wise
+ * operation
  * @return A pointer to the resulting vector
  */
-vector_t*
-scalar_elementwise_operation(const vector_t* a, const float b, float (*operation)(float, float));
+vector_t* scalar_elementwise_operation(
+    const vector_t* a, const float b, float (*operation)(float, float)
+);
 
 // Scalar based vector operations
 
@@ -128,12 +134,13 @@ vector_t* vector_scalar_divide(const vector_t* a, const float b);
 /**
  * @brief Executor for element-wise vector-to-vector functions
  *
- * This function applies a given operation to each corresponding pair of elements in two vectors and
- * returns the resulting vector.
+ * This function applies a given operation to each corresponding pair of
+ * elements in two vectors and returns the resulting vector.
  *
  * @param a First input vector
  * @param b Second input vector
- * @param operation A pointer to the function performing the element-wise operation
+ * @param operation A pointer to the function performing the element-wise
+ * operation
  * @return A pointer to the resulting vector
  */
 vector_t* vector_elementwise_operation(
@@ -183,8 +190,8 @@ vector_t* vector_vector_divide(const vector_t* a, const vector_t* b);
 /**
  * @brief Copy a given N-dimensional vector
  *
- * @note This function creates a deep copy of the input vector by allocating new memory and
- * duplicating its contents.
+ * @note This function creates a deep copy of the input vector by allocating new
+ * memory and duplicating its contents.
  *
  * @param vector Input vector
  * @return A pointer to the deep copied vector
@@ -194,8 +201,8 @@ vector_t* vector_deep_copy(const vector_t* vector);
 /**
  * @brief Create a shallow copy of an N-dimensional vector
  *
- * @note This function returns a pointer to the same allocated memory as the input vector,
- * effectively creating a reference (shallow) copy.
+ * @note This function returns a pointer to the same allocated memory as the
+ * input vector, effectively creating a reference (shallow) copy.
  *
  * @param vector Input vector
  * @return A pointer to the shallow copied vector
@@ -251,7 +258,8 @@ float vector_low_pass_filter(const vector_t* vector, float alpha);
  * @brief Normalize a given N-dimensional vector in place
  *
  * @param vector Input vector
- * @param inplace Boolean flag indicating whether to modify the input vector or return a new vector
+ * @param inplace Boolean flag indicating whether to modify the input vector or
+ * return a new vector
  * @return A pointer to the normalized vector
  */
 vector_t* vector_normalize(vector_t* vector, bool inplace);
@@ -261,7 +269,8 @@ vector_t* vector_normalize(vector_t* vector, bool inplace);
  *
  * @param vector Input vector
  * @param scalar Scaling factor
- * @param inplace Boolean flag indicating whether to modify the input vector or return a new vector
+ * @param inplace Boolean flag indicating whether to modify the input vector or
+ * return a new vector
  * @return A pointer to the scaled vector
  */
 vector_t* vector_scale(vector_t* vector, float scalar, bool inplace);
@@ -272,7 +281,8 @@ vector_t* vector_scale(vector_t* vector, float scalar, bool inplace);
  * @param vector Input vector
  * @param min Minimum value for clipping
  * @param max Maximum value for clipping
- * @param inplace Boolean flag indicating whether to modify the input vector or return a new vector
+ * @param inplace Boolean flag indicating whether to modify the input vector or
+ * return a new vector
  * @return A pointer to the clipped vector
  */
 vector_t* vector_clip(vector_t* vector, float min, float max, bool inplace);
