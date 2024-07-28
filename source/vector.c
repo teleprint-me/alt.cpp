@@ -23,7 +23,9 @@
 #include <stdlib.h>
 #include <string.h>
 
-// Vector lifecycle management
+/**
+ * @brief lifecycle management
+ */
 
 /**
  * @brief Create a new N-dimensional vector
@@ -135,6 +137,202 @@ void vector_free(vector_t* vector) {
     if (vector) {
         free(vector);
     }
+}
+
+/**
+ * @brief Element-wise operations
+ *
+ * These helper functions perform basic arithmetic on two floating-point values
+ * and return the result.
+ *
+ * @param x First operand
+ * @param y Second operand
+ * @return Result of the operation
+ */
+
+float scalar_add(float x, float y) {
+    return x + y;
+}
+
+float scalar_subtract(float x, float y) {
+    return x - y;
+}
+
+float scalar_multiply(float x, float y) {
+    return x * y;
+}
+
+float scalar_divide(float x, float y) {
+    if (y == 0) {
+        LOG(&global_logger,
+            LOG_LEVEL_ERROR,
+            "Division by zero is undefined. Cannot divide x (%f) by y (%f).\n",
+            x,
+            y);
+        return NAN; // Division by zero is undefined
+    }
+    return x / y;
+}
+
+/**
+ * @brief Executor for element-wise vector-to-scalar functions
+ *
+ * This function applies a given operation to each corresponding pair of
+ * elements in two vectors and returns the resulting vector.
+ *
+ * @param a First input vector
+ * @param b Second input scalar
+ * @param operation A pointer to the function performing the element-wise
+ * operation
+ * @return A pointer to the resulting vector
+ */
+vector_t* vector_scalar_elementwise_operation(
+    const vector_t* a, const float b, float (*operation)(float, float)
+) {
+    vector_t* c = vector_create(a->dimensions);
+    if (NULL == c) {
+        LOG(&global_logger,
+            LOG_LEVEL_ERROR,
+            "Failed to allocate memory for the resultant vector.\n");
+        return NULL;
+    }
+
+    // Perform element-wise operation
+    for (size_t i = 0; i < a->dimensions; i++) {
+        c->elements[i] = operation(a->elements[i], b);
+    }
+
+    return c;
+}
+
+/**
+ * @brief Add a scalar value to an N-dimensional vector
+ *
+ * @param a Input vector
+ * @param b Scalar value to add
+ * @return A pointer to the resulting vector
+ */
+vector_t* vector_scalar_add(const vector_t* a, const float b) {
+    return vector_scalar_elementwise_operation(a, b, scalar_add);
+}
+
+/**
+ * @brief Subtract a scalar value from an N-dimensional vector
+ *
+ * @param a Input vector
+ * @param b Scalar value to subtract
+ * @return A pointer to the resulting vector
+ */
+vector_t* vector_scalar_subtract(const vector_t* a, const float b) {
+    return vector_scalar_elementwise_operation(a, b, scalar_subtract);
+}
+
+/**
+ * @brief Multiply a scalar value with an N-dimensional vector
+ *
+ * @param a Input vector
+ * @param b Scalar value to multiply
+ * @return A pointer to the resulting vector
+ */
+vector_t* vector_scalar_multiply(const vector_t* a, const float b) {
+    return vector_scalar_elementwise_operation(a, b, scalar_multiply);
+}
+
+/**
+ * @brief Divide an N-dimensional vector by a scalar value
+ *
+ * @param a Input vector
+ * @param b Scalar value to divide by
+ * @return A pointer to the resulting vector
+ */
+vector_t* vector_scalar_divide(const vector_t* a, const float b) {
+    return vector_scalar_elementwise_operation(a, b, scalar_divide);
+}
+
+/**
+ * @brief Executor for element-wise vector-to-vector functions
+ *
+ * This function applies a given operation to each corresponding pair of
+ * elements in two vectors and returns the resulting vector.
+ *
+ * @param a First input vector
+ * @param b Second input vector
+ * @param operation A pointer to the function performing the element-wise
+ * operation
+ * @return A pointer to the resulting vector
+ */
+vector_t* vector_vector_elementwise_operation(
+    const vector_t* a, const vector_t* b, float (*operation)(float, float)
+) {
+    if (a->dimensions != b->dimensions) {
+        LOG(&global_logger,
+            LOG_LEVEL_ERROR,
+            "Vector dimensions do not match. Cannot perform operation on "
+            "vectors of size %zu and "
+            "%zu.\n",
+            a->dimensions,
+            b->dimensions);
+        return NULL;
+    }
+
+    vector_t* c = vector_create(a->dimensions);
+    if (NULL == c) {
+        LOG(&global_logger,
+            LOG_LEVEL_ERROR,
+            "Failed to allocate memory for the resultant vector.\n");
+        return NULL;
+    }
+
+    // Perform element-wise operation
+    for (size_t i = 0; i < a->dimensions; i++) {
+        c->elements[i] = operation(a->elements[i], b->elements[i]);
+    }
+
+    return c;
+}
+
+/**
+ * @brief Add two N-dimensional vectors
+ *
+ * @param a First input vector
+ * @param b Second input vector
+ * @return A pointer to the resulting vector
+ */
+vector_t* vector_vector_add(const vector_t* a, const vector_t* b) {
+    return vector_vector_elementwise_operation(a, b, scalar_add);
+}
+
+/**
+ * @brief Subtract one N-dimensional vector from another
+ *
+ * @param a First input vector
+ * @param b Second input vector
+ * @return A pointer to the resulting vector
+ */
+vector_t* vector_vector_subtract(const vector_t* a, const vector_t* b) {
+    return vector_vector_elementwise_operation(a, b, scalar_subtract);
+}
+
+/**
+ * @brief Multiply two N-dimensional vectors
+ *
+ * @param a First input vector
+ * @param b Second input vector
+ * @return A pointer to the resulting vector
+ */
+vector_t* vector_vector_multiply(const vector_t* a, const vector_t* b) {
+    return vector_vector_elementwise_operation(a, b, scalar_multiply);
+}
+
+/**
+ * @brief Divide an N-dimensional vector by another N-dimensional vector
+ *
+ * @param a First input vector
+ * @param b Second input vector
+ * @return A pointer to the resulting vector
+ */
+vector_t* vector_vector_divide(const vector_t* a, const vector_t* b) {
+    return vector_vector_elementwise_operation(a, b, scalar_divide);
 }
 
 // Vector mathematical operations
@@ -291,115 +489,6 @@ vector_t* vector_clip(vector_t* vector, float min, float max, bool inplace) {
 
     // Return the newly created clipped vector
     return clipped_vector;
-}
-
-// Helper function for element-wise operations
-float scalar_add(float x, float y) {
-    return x + y;
-}
-
-float scalar_subtract(float x, float y) {
-    return x - y;
-}
-
-float scalar_multiply(float x, float y) {
-    return x * y;
-}
-
-float scalar_divide(float x, float y) {
-    if (y == 0) {
-        LOG(&global_logger,
-            LOG_LEVEL_ERROR,
-            "Division by zero is undefined. Cannot divide x (%f) by y (%f).\n",
-            x,
-            y);
-        return NAN; // Division by zero is undefined
-    }
-    return x / y;
-}
-
-// Function to perform element-wise operation between a vector and scalar value
-vector_t* scalar_elementwise_operation(
-    const vector_t* a, const float b, float (*operation)(float, float)
-) {
-    vector_t* c = vector_create(a->dimensions);
-    if (NULL == c) {
-        LOG(&global_logger,
-            LOG_LEVEL_ERROR,
-            "Failed to allocate memory for the resultant vector.\n");
-        return NULL;
-    }
-
-    // Perform element-wise operation
-    for (size_t i = 0; i < a->dimensions; i++) {
-        c->elements[i] = operation(a->elements[i], b);
-    }
-
-    return c;
-}
-
-vector_t* vector_scalar_add(const vector_t* a, const float b) {
-    return scalar_elementwise_operation(a, b, scalar_add);
-}
-
-vector_t* vector_scalar_subtract(const vector_t* a, const float b) {
-    return scalar_elementwise_operation(a, b, scalar_subtract);
-}
-
-vector_t* vector_scalar_multiply(const vector_t* a, const float b) {
-    return scalar_elementwise_operation(a, b, scalar_multiply);
-}
-
-vector_t* vector_scalar_divide(const vector_t* a, const float b) {
-    return scalar_elementwise_operation(a, b, scalar_divide);
-}
-
-// Function to perform element-wise operation on two vectors
-vector_t* vector_elementwise_operation(
-    const vector_t* a, const vector_t* b, float (*operation)(float, float)
-) {
-    if (a->dimensions != b->dimensions) {
-        LOG(&global_logger,
-            LOG_LEVEL_ERROR,
-            "Vector dimensions do not match. Cannot perform operation on "
-            "vectors of size %zu and "
-            "%zu.\n",
-            a->dimensions,
-            b->dimensions);
-        return NULL;
-    }
-
-    vector_t* c = vector_create(a->dimensions);
-    if (NULL == c) {
-        LOG(&global_logger,
-            LOG_LEVEL_ERROR,
-            "Failed to allocate memory for the resultant vector.\n");
-        return NULL;
-    }
-
-    // Perform element-wise operation
-    for (size_t i = 0; i < a->dimensions; i++) {
-        c->elements[i] = operation(a->elements[i], b->elements[i]);
-    }
-
-    return c;
-}
-
-// Updated functions using the new helper function
-vector_t* vector_vector_add(const vector_t* a, const vector_t* b) {
-    return vector_elementwise_operation(a, b, scalar_add);
-}
-
-vector_t* vector_vector_subtract(const vector_t* a, const vector_t* b) {
-    return vector_elementwise_operation(a, b, scalar_subtract);
-}
-
-vector_t* vector_vector_multiply(const vector_t* a, const vector_t* b) {
-    return vector_elementwise_operation(a, b, scalar_multiply);
-}
-
-vector_t* vector_vector_divide(const vector_t* a, const vector_t* b) {
-    return vector_elementwise_operation(a, b, scalar_divide);
 }
 
 // dot product is n-dimensional
