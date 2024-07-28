@@ -335,7 +335,16 @@ vector_t* vector_vector_divide(const vector_t* a, const vector_t* b) {
     return vector_vector_elementwise_operation(a, b, scalar_divide);
 }
 
-// Vector mathematical operations
+/**
+ * @brief Common vector operations
+ */
+
+/**
+ * @brief Determine the magnitude or length of an N-dimensional vector
+ *
+ * @param vector Input vector
+ * @return The magnitude of the vector
+ */
 float vector_magnitude(const vector_t* vector) {
     float sum = 0;
 
@@ -347,6 +356,95 @@ float vector_magnitude(const vector_t* vector) {
     return sqrt(sum);
 }
 
+/**
+ * @brief Calculate the distance between two given N-dimensional vectors
+ *
+ * @param a First input vector
+ * @param b Second input vector
+ * @return The distance between the two vectors
+ */
+float vector_distance(const vector_t* a, const vector_t* b) {
+    float distance_squared = 0.0f;
+
+    if (a->dimensions != b->dimensions) {
+        LOG(&global_logger,
+            LOG_LEVEL_ERROR,
+            "Vector dimensions do not match. Cannot perform operation on "
+            "vectors of size %zu and "
+            "%zu.\n",
+            a->dimensions,
+            b->dimensions);
+        return NAN;
+    }
+
+    for (size_t i = 0; i < a->dimensions; ++i) {
+        distance_squared += (a->elements[i] - b->elements[i])
+                            * (a->elements[i] - b->elements[i]);
+    }
+
+    return sqrtf(distance_squared);
+}
+
+/**
+ * @brief Calculate the mean of an N-dimensional vector
+ *
+ * This function estimates the mean by weighted averaging.
+ *
+ * m(n) = [x(1) + x(2) + ... + x(n)] / n
+ *
+ * @param vector Input vector
+ * @return The mean of the vector
+ */
+float vector_mean(const vector_t* vector) {
+    if (NULL == vector || 0 == vector->dimensions) {
+        return NAN; // Return NAN for invalid input
+    }
+
+    float sum = 0.0f;
+    for (size_t i = 0; i < vector->dimensions; i++) {
+        if (isnan(vector->elements[i])) {
+            // Log error and return NAN if any element is NaN
+            LOG(&global_logger,
+                LOG_LEVEL_ERROR,
+                "NaN element found at index %zu.\n",
+                i);
+            return NAN;
+        }
+        sum += vector->elements[i];
+    }
+
+    return sum / vector->dimensions; // Return the mean
+}
+
+/**
+ * @brief Low pass filter on an N-dimensional vector
+ *
+ * This function estimates the mean by low-pass filtering rather than averaging.
+ * m(n + 1) = (1 - α) m(n) + α x(n + 1)
+ *
+ * @param vector Input vector
+ * @param alpha Smoothing factor for the low-pass filter
+ * @return The low-pass filtered mean of the vector
+ *
+ * References:
+ * https://www.cs.princeton.edu/courses/archive/fall08/cos436/Duda/PR_learn/mean.htm
+ *
+ */
+float vector_low_pass_filter(const vector_t* vector, float alpha) {
+    LOG(&global_logger,
+        LOG_LEVEL_ERROR,
+        "Vector low pass filter is not currently implemented.\n");
+    return -1.0f;
+}
+
+/**
+ * @brief Normalize a given N-dimensional vector in place
+ *
+ * @param vector Input vector
+ * @param inplace Boolean flag indicating whether to modify the input vector or
+ * return a new vector
+ * @return A pointer to the normalized vector
+ */
 vector_t* vector_normalize(vector_t* vector, bool inplace) {
     float magnitude = vector_magnitude(vector);
 
@@ -381,28 +479,15 @@ vector_t* vector_normalize(vector_t* vector, bool inplace) {
     return unit;
 }
 
-float vector_distance(const vector_t* a, const vector_t* b) {
-    float distance_squared = 0.0f;
-
-    if (a->dimensions != b->dimensions) {
-        LOG(&global_logger,
-            LOG_LEVEL_ERROR,
-            "Vector dimensions do not match. Cannot perform operation on "
-            "vectors of size %zu and "
-            "%zu.\n",
-            a->dimensions,
-            b->dimensions);
-        return NAN;
-    }
-
-    for (size_t i = 0; i < a->dimensions; ++i) {
-        distance_squared += (a->elements[i] - b->elements[i])
-                            * (a->elements[i] - b->elements[i]);
-    }
-
-    return sqrtf(distance_squared);
-}
-
+/**
+ * @brief Scale an N-dimensional vector by the specified factor
+ *
+ * @param vector Input vector
+ * @param scalar Scaling factor
+ * @param inplace Boolean flag indicating whether to modify the input vector or
+ * return a new vector
+ * @return A pointer to the scaled vector
+ */
 vector_t* vector_scale(vector_t* vector, float scalar, bool inplace) {
     if (vector == NULL) {
         return NULL;
@@ -431,27 +516,16 @@ vector_t* vector_scale(vector_t* vector, float scalar, bool inplace) {
     return scaled_vector;
 }
 
-float vector_mean(const vector_t* vector) {
-    if (NULL == vector || 0 == vector->dimensions) {
-        return NAN; // Return NAN for invalid input
-    }
-
-    float sum = 0.0f;
-    for (size_t i = 0; i < vector->dimensions; i++) {
-        if (isnan(vector->elements[i])) {
-            // Log error and return NAN if any element is NaN
-            LOG(&global_logger,
-                LOG_LEVEL_ERROR,
-                "NaN element found at index %zu.\n",
-                i);
-            return NAN;
-        }
-        sum += vector->elements[i];
-    }
-
-    return sum / vector->dimensions; // Return the mean
-}
-
+/**
+ * @brief Clip an N-dimensional vector within a given range
+ *
+ * @param vector Input vector
+ * @param min Minimum value for clipping
+ * @param max Maximum value for clipping
+ * @param inplace Boolean flag indicating whether to modify the input vector or
+ * return a new vector
+ * @return A pointer to the clipped vector
+ */
 vector_t* vector_clip(vector_t* vector, float min, float max, bool inplace) {
     if (NULL == vector || 0 == vector->dimensions) {
         return NULL;
@@ -491,7 +565,19 @@ vector_t* vector_clip(vector_t* vector, float min, float max, bool inplace) {
     return clipped_vector;
 }
 
-// dot product is n-dimensional
+/**
+ * @brief Special vector operations
+ */
+
+/**
+ * @brief Calculate the dot product of two N-dimensional vectors
+ *
+ * @note Dot product is n-dimensional
+ *
+ * @param a First input vector
+ * @param b Second input vector
+ * @return The dot product of the two vectors
+ */
 float vector_dot_product(const vector_t* a, const vector_t* b) {
     if (a->dimensions != b->dimensions) {
         LOG(&global_logger,
@@ -513,7 +599,15 @@ float vector_dot_product(const vector_t* a, const vector_t* b) {
     return product;
 }
 
-// cross product is 3-dimensional
+/**
+ * @brief Return the cross product of two 3D vectors
+ *
+ * @note Cross product is 3-dimensional
+ *
+ * @param a First input vector (3D vector)
+ * @param b Second input vector (3D vector)
+ * @return A pointer to the cross product vector
+ */
 vector_t* vector_cross_product(const vector_t* a, const vector_t* b) {
     // Ensure both vectors are 3-dimensional.
     if (a->dimensions != 3 || b->dimensions != 3) {
@@ -542,23 +636,22 @@ vector_t* vector_cross_product(const vector_t* a, const vector_t* b) {
     return result;
 }
 
-// Formula is as defined:
-// r = ± √(x^2 + y^2)
-// tan θ = y / x
-// x = r cos θ
-// y = r sin θ
-// theta is the angle between the hypotenuse and the x-axis.
-// P is (x, y) is (r, θ)
-// x is the base, y is the height, assuming a right angle between rise over run
-// r is hypotenuse
+/**
+ * @brief Special coordinates
+ */
 
-// Coordinate transformation functions
-
-// Polar coordinates are defined as the ordered pair (r, θ) names a point r
-// units from origin along the terminal side of angle θ in standard position
-// (origin to elements).
-
-// x = r cos θ and y = r sin θ
+/**
+ * @brief Convert polar coordinates to cartesian coordinates
+ *
+ * Polar coordinates are defined as the ordered pair (r, θ) names a point r
+ * units from origin along the terminal side of angle θ in standard position
+ * (origin to elements).
+ *
+ * @note x = r cos θ and y = r sin θ
+ *
+ * @param polar_vector Input vector in polar coordinates
+ * @return A pointer to the vector in cartesian coordinates
+ */
 vector_t* vector_polar_to_cartesian(const vector_t* polar_vector) {
     if (NULL == polar_vector || polar_vector->dimensions != 2) {
         return NULL; // Return NULL if input is invalid
@@ -580,10 +673,17 @@ vector_t* vector_polar_to_cartesian(const vector_t* polar_vector) {
     return cartesian_vector;
 }
 
-// The derivation between polar and cartesian coordinates is to consider a point
-// P with the rectangular (x, y) and polar (r, θ) coordinates.
-
-// r = ± √(x^2 + y^2) and tan θ = y / x
+/**
+ * @brief Convert cartesian coordinates to polar coordinates
+ *
+ * The derivation between polar and cartesian coordinates is to consider a point
+ * P with the rectangular (x, y) and polar (r, θ) coordinates.
+ *
+ * @note r = ± √(x^2 + y^2) and tan θ = y / x
+ *
+ * @param cartesian_vector Input vector in cartesian coordinates
+ * @return A pointer to the vector in polar coordinates
+ */
 vector_t* vector_cartesian_to_polar(const vector_t* cartesian_vector) {
     if (NULL == cartesian_vector || cartesian_vector->dimensions != 2) {
         return NULL; // Return NULL if input is invalid
