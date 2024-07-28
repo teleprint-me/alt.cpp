@@ -111,7 +111,7 @@ float scalar_divide(float x, float y);
  * operation
  * @return A pointer to the resulting vector
  */
-vector_t* scalar_elementwise_operation(
+vector_t* vector_scalar_elementwise_operation(
     const vector_t* a, const float b, float (*operation)(float, float)
 );
 
@@ -153,6 +153,8 @@ vector_t* vector_scalar_multiply(const vector_t* a, const float b);
  */
 vector_t* vector_scalar_divide(const vector_t* a, const float b);
 
+// Vector based operations
+
 /**
  * @brief Executor for element-wise vector-to-vector functions
  *
@@ -165,11 +167,9 @@ vector_t* vector_scalar_divide(const vector_t* a, const float b);
  * operation
  * @return A pointer to the resulting vector
  */
-vector_t* vector_elementwise_operation(
+vector_t* vector_vector_elementwise_operation(
     const vector_t* a, const vector_t* b, float (*operation)(float, float)
 );
-
-// Vector based operations
 
 /**
  * @brief Add two N-dimensional vectors
