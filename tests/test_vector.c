@@ -177,14 +177,25 @@ bool test_vector_deep_copy(void) {
     return result; // Return the actual result of the test
 }
 
+/**
+ * @brief Test if shallow copying an N-dimensional vector creates a reference
+ * (shallow) copy with shared memory.
+ *
+ * This test verifies that `vector_shallow_copy()` works as expected under
+ * various conditions, including:
+ * - Shallow copies are created successfully
+ * - The original and shallow copied vectors share the same elements array
+ * - Both vectors have the same number of dimensions
+ * - Modifications to either vector affect both since they share memory
+ */
 bool test_vector_shallow_copy(void) {
-    bool   result     = true;
-    size_t dimensions = 2; // Example dimensions
+    bool result = true;
 
+    // original->elements[0] = 10
+    // original->elements[1] = 20
+    // original->dimensions = 2
     // Create an original vector and set some values
-    vector_t* original    = vector_create(dimensions);
-    original->elements[0] = 10;
-    original->elements[1] = 20;
+    vector_t* original = vector_2d_fixture(10, 20);
 
     // Perform a shallow copy
     vector_t* shallow_copy = vector_shallow_copy(original);
@@ -199,7 +210,7 @@ bool test_vector_shallow_copy(void) {
         LOG(&global_logger,
             LOG_LEVEL_ERROR,
             "Elements array not shared between original and shallow copy.\n");
-    } else if (dimensions != shallow_copy->dimensions) {
+    } else if (original->dimensions != shallow_copy->dimensions) {
         // Check if both vectors share the same dimensions
         result = false;
         LOG(&global_logger,
@@ -207,11 +218,10 @@ bool test_vector_shallow_copy(void) {
             "Expected vector_t to have dimensions(%zu), got "
             "shallow_copy->dimensions(%zu) "
             "instead.\n",
-            dimensions,
+            original->dimensions,
             shallow_copy->dimensions);
     }
 
-    // NOTE: Separate concerns for testing modifications
     // Modify the original vector and check if changes reflect in the shallow
     // copy
     original->elements[0] = 30; // Change the value
@@ -226,9 +236,11 @@ bool test_vector_shallow_copy(void) {
     // same elements array
     vector_free(original);
     // Note: Depending on your implementation, you might need to free
-    // shallow_copy itself, just not its elements array
-    // Assuming shallow_copy is just a wrapper without its own elements array
-    free(shallow_copy);
+    // shallow_copy itself, assuming shallow_copy is just a wrapper without its
+    // own elements array
+    if (shallow_copy) {
+        free(shallow_copy);
+    }
 
     printf("%s", result ? "." : "x");
     return result; // Return the actual result of the test
