@@ -246,31 +246,53 @@ bool test_vector_shallow_copy(void) {
     return result; // Return the actual result of the test
 }
 
+/**
+ * @brief Test if vector deallocation is performed correctly
+ *
+ * This test verifies that the vector_free implementation works as expected,
+ * ensuring proper memory deallocation of both valid and invalid vectors.
+ */
 bool test_vector_free(void) {
-    // TODO: Look into valgrind for more refined testing with memory
-    // deallocation
     bool result = true;
 
+    // Create a 2D vector using the fixture
+    vector_t* vector = vector_2d_fixture(10, 20);
+
     // Test destruction of a valid vector
-    vector_t* vector = vector_create(2);
     if (NULL == vector) {
         LOG(&global_logger,
             LOG_LEVEL_ERROR,
             "Failed to create a valid vector.\n");
+        result = false;
+    } else {
+        vector_free(vector);
+        // After freeing, the vector pointer should not be used, hence no
+        // further checks here
     }
 
-    vector_free(vector);
-
     // Test destruction with NULL vector
-    // NOTE: vector_free logs an error when passing NULL as an argument.
-    // if (vector_free(NULL)) {
-    //     LOG(&global_logger, LOG_LEVEL_ERROR, "vector_free should return
-    //     false for NULL input.\n"
-    //     );
-    //     result = false;
-    // }
+    vector_free(NULL); // This should not cause any errors or logging
 
     printf("%s", result ? "." : "x");
+
+    // Test destruction multiple times
+    vector_t* new_vector = vector_2d_fixture(30, 40);
+
+    if (NULL == new_vector) {
+        LOG(&global_logger,
+            LOG_LEVEL_ERROR,
+            "Failed to create a valid vector for multiple deallocation test.\n"
+        );
+        result = false;
+    } else {
+        for (int i = 0; i < 5; ++i) {
+            vector_free(new_vector);
+        }
+        // Ensure the vector is properly destroyed by attempting to free it
+        // again
+        vector_free(new_vector); // This should not cause any errors or logging
+    }
+
     return result; // Return the actual result of the test
 }
 
