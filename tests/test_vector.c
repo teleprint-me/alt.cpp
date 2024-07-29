@@ -114,8 +114,16 @@ bool test_vector_create(void) {
 }
 
 /**
- * @brief Tests if vector_deep_copy correctly duplicates the input N-dimensional
- *        vector by allocating new memory and copying its contents.
+ * @brief Test if the vector_deep_copy implementation correctly duplicates a
+ * given N-dimensional input vector by allocating new memory for the copied
+ * data.
+ *
+ * This test verifies that `vector_deep_copy()` function works as expected under
+ * various conditions, including:
+ * - Correctly allocates new memory and copies elements from the original vector
+ * - Maintains the same number of dimensions as the original vector
+ *
+ * @returns true if all tests pass; false otherwise
  */
 bool test_vector_deep_copy(void) {
     bool result = true; // test result status
@@ -130,20 +138,35 @@ bool test_vector_deep_copy(void) {
 
     if (NULL == deep_copy) {
         // vector_deep_copy failed to allocate memory for vector
+        LOG(&global_logger,
+            LOG_LEVEL_ERROR,
+            "Failed to allocate memory for deep copy of the vector.\n");
         result = false;
     } else if (deep_copy->elements[0] != 1 || deep_copy->elements[1] != 3) {
         // Elements do not match original vector's elements
+        LOG(&global_logger,
+            LOG_LEVEL_ERROR,
+            "Deep copy elements do not match original vector's elements.\n");
         result = false;
     } else if (original->dimensions != deep_copy->dimensions) {
         // Failed to correctly set the vector dimensions
         LOG(&global_logger,
             LOG_LEVEL_ERROR,
             "Expected vector_t to have dimensions(%zu), got "
-            "deep_copy->dimensions(%zu) "
-            "instead.\n",
+            "deep_copy->dimensions(%zu) instead.\n",
             original->dimensions,
             deep_copy->dimensions);
         result = false;
+    } else {
+        // Ensure deep copy is indeed a separate memory allocation
+        original->elements[0] = 2; // Modify original vector
+        if (deep_copy->elements[0] == 2) {
+            LOG(&global_logger,
+                LOG_LEVEL_ERROR,
+                "Deep copy shares memory with original vector. "
+                "Elements should be independent.\n");
+            result = false;
+        }
     }
 
     // Cleanup
@@ -204,8 +227,8 @@ bool test_vector_shallow_copy(void) {
     vector_free(original);
     // Note: Depending on your implementation, you might need to free
     // shallow_copy itself, just not its elements array
-    free(shallow_copy
-    ); // Assuming shallow_copy is just a wrapper without its own elements array
+    // Assuming shallow_copy is just a wrapper without its own elements array
+    free(shallow_copy);
 
     printf("%s", result ? "." : "x");
     return result; // Return the actual result of the test
