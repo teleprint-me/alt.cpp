@@ -14,19 +14,39 @@
 #include <stdio.h>
 #include <string.h>
 
+/** Prototypes */
+
+// Test fixtures
 vector_t* vector_2d_fixture(float x, float y);
 vector_t* vector_3d_fixture(float x, float y, float z);
-bool      test_vector_create(void);
-bool      test_vector_deep_copy(void);
-bool      test_vector_shallow_copy(void);
-bool      test_vector_free(void);
-bool      test_vector_magnitude(void);
-bool      test_elementwise_operation(
-         const char* operation_label,
-         // Function pointer for expected result calculation
-         vector_t* (*operation_elementwise)(const vector_t*, const vector_t*),
-         float (*operation)(float a, float b)
-     );
+
+// Vector lifecycle management
+bool test_vector_create(void);
+bool test_vector_deep_copy(void);
+bool test_vector_shallow_copy(void);
+bool test_vector_free(void);
+
+// Element-wise operations
+bool test_vector_vector_elementwise_operation(
+    const char* operation_label,
+    // Function pointer for expected result calculation
+    vector_t* (*operation_elementwise)(const vector_t*, const vector_t*),
+    float (*operation)(float a, float b)
+);
+
+// Common vector operations
+bool test_vector_magnitude(void);
+bool test_vector_distance(void);
+bool test_vector_mean(void);
+bool test_vector_normalize(void);
+// Special vector operations
+bool test_vector_dot_product(void);
+bool test_vector_cross_product(void);
+// Special vector coordinates
+bool test_vector_polar_to_cartesian(void);
+bool test_vector_cartesian_to_polar(void);
+
+/** Fixtures */
 
 /**
  * @brief Creates a new vector object with specified x and y coordinates
@@ -73,6 +93,8 @@ vector_t* vector_3d_fixture(float x, float y, float z) {
 
     return vector; // use vector_free(vector) to free the vector object
 }
+
+/** Unit Tests */
 
 /**
  * @brief Test the correctness of vector creation
@@ -344,7 +366,7 @@ bool test_vector_magnitude(void) {
     return result;
 }
 
-bool test_elementwise_operation(
+bool test_vector_vector_elementwise_operation(
     const char* operation_label,
     // Function pointer for expected result calculation
     vector_t* (*operation_elementwise)(const vector_t*, const vector_t*),
@@ -404,21 +426,41 @@ int main(void) {
 
     bool result = true;
 
+    // Vector lifecycle management
     result &= test_vector_create();
     result &= test_vector_deep_copy();
     result &= test_vector_shallow_copy();
     result &= test_vector_free();
-    result &= test_elementwise_operation("add", vector_vector_add, scalar_add);
-    result &= test_elementwise_operation(
+
+    // Element-wise operations
+
+    // test vector scalar elementwise operations
+    // TODO
+
+    // test vector vector elementwise operations
+    result &= test_vector_vector_elementwise_operation(
+        "add", vector_vector_add, scalar_add
+    );
+    result &= test_vector_vector_elementwise_operation(
         "subtract", vector_vector_subtract, scalar_subtract
     );
-    result &= test_elementwise_operation(
+    result &= test_vector_vector_elementwise_operation(
         "multiply", vector_vector_multiply, scalar_multiply
     );
-    result &= test_elementwise_operation(
+    result &= test_vector_vector_elementwise_operation(
         "divide", vector_vector_divide, scalar_divide
     );
+
+    // Common vector operations
+
     result &= test_vector_magnitude();
+    result &= test_vector_distance();
+    result &= test_vector_mean();
+    result &= test_vector_normalize();
+
+    // Special vector operations
+    result &= test_vector_dot_product();
+    result &= test_vector_cross_product();
 
     if (result) {
         printf("All tests passed.\n");
