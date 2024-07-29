@@ -133,21 +133,14 @@ vector_t* vector_shallow_copy(const vector_t* vector) {
  * This function deallocates memory associated with a given vector, releasing
  * any resources used during its creation.
  *
- * @note There's no method (that I know of) to effectively guard against double
- * freeing. The best ways to mitigate this are to trigger a log or a compiler
- * warning. There's a not so obvious factor as well as a obvious factor.
- * The obvious factor is that devs like to ignore warnings even though they
- * should be treated as errors. So, the trade-off seems to be when we should
- * show relevant information regarding the error. How that error is handled is
- * up to the user. See references for more information.
+ * @note This function does not handle double freeing directly. To avoid
+ * double freeing, ensure pointers are set to NULL after freeing.
  *
- * - 7.22.3 Memory management functions on pg. 347
- * - Source: https://www.open-std.org/jtc1/sc22/wg14/www/docs/n1548.pdf
- * - Rationale: https://stackoverflow.com/q/34284846/15147156
- *
- * So, the moral of the story is to not be an idiot and respect the language by
- * not doing anything stupid like attempting to free an already freed object.
- * This is easier said than done as complexity increases.
+ * References:
+ * - 7.22.3 Memory management functions on page 347
+ * - <https://www.open-std.org/jtc1/sc22/wg14/www/docs/n1548.pdf>
+ * - Rationale for setting the pointer to NULL:
+ *   <https://stackoverflow.com/q/34284846/15147156>
  *
  * @param vector A pointer to the vector to be freed
  */
