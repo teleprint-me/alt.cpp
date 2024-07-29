@@ -26,8 +26,8 @@
  * @returns A pointer to the newly created vector object
  */
 vector_t* vector_2d_fixture(float x, float y) {
-    size_t    dimensions = 2; // 2-dimensional vector
-    vector_t* vector     = vector_create(dimensions);
+    const size_t dimensions = 2; // 2-dimensional vector
+    vector_t*    vector     = vector_create(dimensions);
 
     // set elements with provided coordinates
     vector->elements[0] = x; // horizontal axis representing the width
@@ -49,8 +49,8 @@ vector_t* vector_2d_fixture(float x, float y) {
  * @returns A pointer to the newly created vector object
  */
 vector_t* vector_3d_fixture(float x, float y, float z) {
-    size_t    dimensions = 3; // 3-dimensional vector
-    vector_t* vector     = vector_create(dimensions);
+    const size_t dimensions = 3; // 3-dimensional vector
+    vector_t*    vector     = vector_create(dimensions);
 
     // set elements with provided coordinates
     vector->elements[0] = x; // horizontal axis representing the width
@@ -113,15 +113,19 @@ bool test_vector_create(void) {
     return result;
 }
 
+/**
+ * @brief Tests if vector_deep_copy correctly duplicates the input N-dimensional
+ *        vector by allocating new memory and copying its contents.
+ */
 bool test_vector_deep_copy(void) {
-    bool   result     = true; // test result status
-    size_t dimensions = 2;    // number of elements
+    bool result = true; // test result status
 
-    // Assuming vector_deep_copy takes a pointer to a float array and dimensions
-    vector_t* original    = vector_create(dimensions);
-    original->elements[0] = 1;
-    original->elements[1] = 3;
+    // original->elements[0] = 1
+    // original->elements[1] = 3
+    // original->dimensions  = 2
+    vector_t* original = vector_2d_fixture(1, 3);
 
+    // vector_deep_copy takes a pointer to a vector_t object
     vector_t* deep_copy = vector_deep_copy(original);
 
     if (NULL == deep_copy) {
@@ -130,21 +134,20 @@ bool test_vector_deep_copy(void) {
     } else if (deep_copy->elements[0] != 1 || deep_copy->elements[1] != 3) {
         // Elements do not match original vector's elements
         result = false;
-    } else if (dimensions != deep_copy->dimensions) {
+    } else if (original->dimensions != deep_copy->dimensions) {
         // Failed to correctly set the vector dimensions
         LOG(&global_logger,
             LOG_LEVEL_ERROR,
             "Expected vector_t to have dimensions(%zu), got "
             "deep_copy->dimensions(%zu) "
             "instead.\n",
-            dimensions,
+            original->dimensions,
             deep_copy->dimensions);
         result = false;
     }
 
     // Cleanup
-    vector_free(original
-    ); // Assuming this is how you'd free the original vector
+    vector_free(original);  // Free the original vector
     vector_free(deep_copy); // Free the copied vector
 
     printf("%s", result ? "." : "x");
