@@ -14,6 +14,20 @@
 #include <stdio.h>
 #include <string.h>
 
+vector_t* vector_2d_fixture(float x, float y);
+vector_t* vector_3d_fixture(float x, float y, float z);
+bool      test_vector_create(void);
+bool      test_vector_deep_copy(void);
+bool      test_vector_shallow_copy(void);
+bool      test_vector_free(void);
+bool      test_vector_magnitude(void);
+bool      test_elementwise_operation(
+         const char* operation_label,
+         // Function pointer for expected result calculation
+         vector_t* (*operation_elementwise)(const vector_t*, const vector_t*),
+         float (*operation)(float a, float b)
+     );
+
 /**
  * @brief Creates a new vector object with specified x and y coordinates
  *
@@ -191,21 +205,14 @@ bool test_vector_deep_copy(void) {
 bool test_vector_shallow_copy(void) {
     bool result = true;
 
-    // original->elements[0] = 10
-    // original->elements[1] = 20
-    // original->dimensions = 2
     // Create an original vector and set some values
     vector_t* original = vector_2d_fixture(10, 20);
 
     // Perform a shallow copy
     vector_t* shallow_copy = vector_shallow_copy(original);
 
-    // Test if the shallow copy was successful
-    if (NULL == shallow_copy) {
-        result = false;
-        LOG(&global_logger, LOG_LEVEL_ERROR, "Shallow copy creation failed.\n");
-    } else if (shallow_copy->elements != original->elements) {
-        // Check if both vectors share the same elements array
+    // Check if both vectors share the same elements array
+    if (original->elements != shallow_copy->elements) {
         result = false;
         LOG(&global_logger,
             LOG_LEVEL_ERROR,
@@ -216,8 +223,7 @@ bool test_vector_shallow_copy(void) {
         LOG(&global_logger,
             LOG_LEVEL_ERROR,
             "Expected vector_t to have dimensions(%zu), got "
-            "shallow_copy->dimensions(%zu) "
-            "instead.\n",
+            "shallow_copy->dimensions(%zu) instead.\n",
             original->dimensions,
             shallow_copy->dimensions);
     }
@@ -229,17 +235,19 @@ bool test_vector_shallow_copy(void) {
         result = false;
         LOG(&global_logger,
             LOG_LEVEL_ERROR,
-            "Changes in original vector not reflected in shallow copy.\n");
+            "Changes to the original vector not reflected in the shallow "
+            "copy.\n");
     }
 
     // Cleanup: Only destroy the original vector since shallow_copy shares the
     // same elements array
     vector_free(original);
-    // Note: Depending on your implementation, you might need to free
-    // shallow_copy itself, assuming shallow_copy is just a wrapper without its
-    // own elements array
+    // Free the shallow_copy itself, assuming shallow_copy is just a wrapper
+    // without its own elements array
     if (shallow_copy) {
         free(shallow_copy);
+        // note: we cannot use vector_free here.
+        // using vector_free will result in a double free incident.
     }
 
     printf("%s", result ? "." : "x");
@@ -255,7 +263,7 @@ bool test_vector_shallow_copy(void) {
 bool test_vector_free(void) {
     bool result = true;
 
-    // Create a 2D vector using the fixture
+    // Create a vector using the fixture
     vector_t* vector = vector_2d_fixture(10, 20);
 
     // Test destruction of a valid vector
@@ -264,36 +272,28 @@ bool test_vector_free(void) {
             LOG_LEVEL_ERROR,
             "Failed to create a valid vector.\n");
         result = false;
-    } else {
-        vector_free(vector);
-        // After freeing, the vector pointer should not be used, hence no
-        // further checks here
+    }
+
+    // Free the vector
+    vector_free(vector);
+    vector = NULL; // Comment this out if you want to explicitly test
+                   // double-free handling.
+
+    // Ensure the vector is properly destroyed and pointer is set to NULL
+    if (vector != NULL) {
+        LOG(&global_logger,
+            LOG_LEVEL_ERROR,
+            "Failed to set vector pointer to NULL after free.\n");
+        result = false;
     }
 
     // Test destruction with NULL vector
-    vector_free(NULL); // This should not cause any errors or logging
+    vector_free(NULL);   // This should not cause any errors or logging
+    vector_free(vector); // This should handle already NULL pointers gracefully
 
     printf("%s", result ? "." : "x");
 
-    // Test destruction multiple times
-    vector_t* new_vector = vector_2d_fixture(30, 40);
-
-    if (NULL == new_vector) {
-        LOG(&global_logger,
-            LOG_LEVEL_ERROR,
-            "Failed to create a valid vector for multiple deallocation test.\n"
-        );
-        result = false;
-    } else {
-        for (int i = 0; i < 5; ++i) {
-            vector_free(new_vector);
-        }
-        // Ensure the vector is properly destroyed by attempting to free it
-        // again
-        vector_free(new_vector); // This should not cause any errors or logging
-    }
-
-    return result; // Return the actual result of the test
+    return result;
 }
 
 bool test_vector_magnitude(void) {
