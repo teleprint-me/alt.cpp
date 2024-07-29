@@ -60,37 +60,57 @@ vector_t* vector_3d_fixture(float x, float y, float z) {
     return vector; // use vector_free(vector) to free the vector object
 }
 
+/**
+ * @brief Test the correctness of vector creation
+ *
+ * This function tests that the `vector_create()` implementation
+ * correctly allocates memory and initializes a new N-dimensional
+ * vector with zeros.
+ */
 bool test_vector_create(void) {
     bool result = true;
 
-    size_t    dimensions = 3; // 3-dimensional vector, e.g. x, y, z
-    vector_t* vector     = vector_create(dimensions);
+    // Test with a valid number of dimensions
+    const size_t dimensions = 3;
+    vector_t*    vector     = vector_create(dimensions);
 
     if (NULL == vector) {
-        // vector_create failed to allocate memory for vector
+        LOG(&global_logger,
+            LOG_LEVEL_ERROR,
+            "Failed to allocate memory for a %zu-dimensional vector.\n",
+            dimensions);
         result = false;
     } else if (NULL == vector->elements) {
         // vector_create failed to allocate memory for elements
+        LOG(&global_logger,
+            LOG_LEVEL_ERROR,
+            "Failed to allocate %zu bytes to vector->elements.\n",
+            dimensions * sizeof(float));
         result = false;
     } else if (dimensions != vector->dimensions) {
         // vector_create failed to correctly set the vector dimensions
         LOG(&global_logger,
             LOG_LEVEL_ERROR,
             "Expected vector_t to have dimensions(%zu), got "
-            "vector->dimensions(%zu) "
-            "instead.\n",
+            "vector->dimensions(%zu)"
+            " instead.\n",
             dimensions,
             vector->dimensions);
         result = false;
-    }
+    } else {
+        // Check if the elements are initialized with zeros
+        for (size_t i = 0; i < dimensions; ++i) {
+            assert(vector->elements[i] == 0.0f);
+        }
 
-    // Correctly destroy the vector and free its memory
-    if (vector) {
-        vector_free(vector);
+        // Correctly destroy the vector and free its memory
+        if (vector) {
+            vector_free(vector);
+        }
     }
 
     printf("%s", result ? "." : "x");
-    return result; // Return the actual result of the test
+    return result;
 }
 
 bool test_vector_deep_copy(void) {

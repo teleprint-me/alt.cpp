@@ -37,7 +37,7 @@
  * @param dimensions Number of dimensions for the vector
  * @return A pointer to the newly created vector
  */
-vector_t* vector_create(size_t dimensions) {
+vector_t* vector_create(const size_t dimensions) {
     vector_t* vector = (vector_t*) malloc(sizeof(vector_t));
     if (NULL == vector) { // If no memory was allocated
         LOG(&global_logger,
@@ -58,7 +58,13 @@ vector_t* vector_create(size_t dimensions) {
     }
 
     // After allocating vector->elements
-    memset(vector->elements, 0, dimensions * sizeof(float));
+    // NOTE: memset may be optimized away (under the as-if rules) if the object
+    // modified by this function is not accessed again for the rest of its
+    // lifetime (e.g., gcc bug 8537). For this reason, we do not employ its use
+    // here.
+    for (size_t i = 0; i < dimensions; i++) {
+        vector->elements[i] = 0.0f;
+    }
 
     vector->dimensions
         = dimensions; // track the dimensions of the vector to prevent decay.

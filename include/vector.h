@@ -48,7 +48,7 @@ typedef struct {
  * @param dimensions Number of dimensions for the vector
  * @return A pointer to the newly created vector
  */
-vector_t* vector_create(size_t dimensions);
+vector_t* vector_create(const size_t dimensions);
 
 /**
  * @brief Copy a given N-dimensional vector
