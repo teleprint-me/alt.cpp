@@ -31,6 +31,7 @@ typedef enum {
 typedef uint32_t float32_t;
 typedef uint16_t float16_t;
 typedef uint16_t bfloat16_t;
+typedef uint8_t  float8_t;
 
 // Union to map float to internal integer representation
 typedef union {
