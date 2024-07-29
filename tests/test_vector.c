@@ -289,7 +289,7 @@ bool test_vector_free(void) {
                    // double-free handling.
 
     // Ensure the vector is properly destroyed and pointer is set to NULL
-    if (vector != NULL) {
+    if (NULL != vector) {
         LOG(&global_logger,
             LOG_LEVEL_ERROR,
             "Failed to set vector pointer to NULL after free.\n");
