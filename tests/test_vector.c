@@ -1,5 +1,8 @@
 /**
  * @file tests/test_vector.c
+ *
+ * @note keep fixtures and related tests as simple as reasonably possible. The
+ * simpler, the better.
  */
 
 #include "../include/logger.h"
@@ -11,14 +14,48 @@
 #include <stdio.h>
 #include <string.h>
 
-// keep the fixture and related tests as simple as reasonably possible
-vector_t* vector_fixture(void) {
-    size_t    dimensions = 2; // 2-dimensional vector, e.g. x, y
+/**
+ * @brief Creates a new vector object with specified x and y coordinates
+ *
+ * This fixture is used to create a new 2D vector object with the given
+ * x (horizontal) and y (vertical) coordinates.
+ *
+ * @param[in] x The horizontal coordinate of the new vector
+ * @param[in] y The vertical coordinate of the new vector
+ *
+ * @returns A pointer to the newly created vector object
+ */
+vector_t* vector_2d_fixture(float x, float y) {
+    size_t    dimensions = 2; // 2-dimensional vector
     vector_t* vector     = vector_create(dimensions);
 
-    // we have to manually set x, y dimensions
-    vector->elements[0] = 5; // set x (horizontal) axis
-    vector->elements[1] = 3; // set y (vertical) axis
+    // set elements with provided coordinates
+    vector->elements[0] = x; // horizontal axis representing the width
+    vector->elements[1] = y; // vertical axis representing the height
+
+    return vector; // use vector_free(vector) to free the vector object
+}
+
+/**
+ * @brief Creates a new vector object with specified x, y and z coordinates
+ *
+ * This fixture is used to create a new 3D vector object with the given
+ * x (horizontal), y (vertical) and z (depth) coordinates.
+ *
+ * @param[in] x The horizontal coordinate of the new vector
+ * @param[in] y The vertical coordinate of the new vector
+ * @param[in] z The depth coordinate of the new vector
+ *
+ * @returns A pointer to the newly created vector object
+ */
+vector_t* vector_3d_fixture(float x, float y, float z) {
+    size_t    dimensions = 3; // 3-dimensional vector
+    vector_t* vector     = vector_create(dimensions);
+
+    // set elements with provided coordinates
+    vector->elements[0] = x; // horizontal axis representing the width
+    vector->elements[1] = y; // vertical axis representing the height
+    vector->elements[2] = z; // orthogonal axis representing the depth
 
     return vector; // use vector_free(vector) to free the vector object
 }
