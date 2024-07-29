@@ -259,6 +259,15 @@ bool test_vector_shallow_copy(void) {
  *
  * This test verifies that the vector_free implementation works as expected,
  * ensuring proper memory deallocation of both valid and invalid vectors.
+ *
+ * @note This function does not handle double freeing directly. To avoid
+ * double freeing, ensure pointers are set to NULL after freeing.
+ *
+ * References:
+ * - 7.22.3 Memory management functions on page 347
+ * - <https://www.open-std.org/jtc1/sc22/wg14/www/docs/n1548.pdf>
+ * - Rationale for setting the pointer to NULL:
+ *   <https://stackoverflow.com/q/34284846/15147156>
  */
 bool test_vector_free(void) {
     bool result = true;
