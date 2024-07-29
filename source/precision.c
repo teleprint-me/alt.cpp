@@ -1,7 +1,7 @@
 /**
  * Copyright © 2024 Austin Berrio
  *
- * @file include/precision.h
+ * @file source/precision.c
  *
  * @brief A simple and easy-to-use API for handling precision in C
  *
@@ -9,46 +9,25 @@
  */
 
 #include "../include/precision.h"
-
 #include <math.h>
 #include <stdint.h>
 
 // Determines if two floating-point values are approximately equal within
 // specified tolerances.
-bool float_is_close(
-    float a, float b, float relative /*= 1e-3f*/, float absolute /*= 0.0f*/
-) {
+bool float_is_close(float a, float b, float tolerance /*= FLOAT_TOLERANCE*/) {
     return fabsf(a - b)
-           <= fmaxf(relative * fmaxf(fabsf(a), fabsf(b)), absolute);
-}
-
-void* encode_float(float value, data_type_t dtype) {
-    float_flex_t flex;
-    flex.value.f32 = value;
-
-    switch (dtype) {
-        case TYPE_FLOAT_F32:
-            return &flex.value.uint32;
-        default:
-            break;
-    }
-
-    return NULL;
-}
-
-float decode_float(const float_flex_t* flex) {
-    return 0.0f;
+           <= fmaxf(tolerance * fmaxf(fabsf(a), fabsf(b)), tolerance);
 }
 
 // Function to encode a float into its IEEE-754 binary32 representation
-uint32_t encode_float32(float value) {
+float32_t encode_float32(float value) {
     float_data_t f32;
     f32.value = value;
     return f32.bits;
 }
 
 // Function to decode an IEEE-754 binary32 representation into a float
-float decode_float32(uint32_t bits) {
+float decode_float32(float32_t bits) {
     float_data_t f32;
     f32.bits = bits;
     return f32.value;
