@@ -43,16 +43,120 @@ Expanding this:
 
 Here, $ 0x0000 $ represents 16 binary digits (bits), as each hex digit corresponds to four binary digits.
 
-### Summary
-
 Understanding these representations is crucial when converting between different floating-point formats, such as from a 32-bit to a 16-bit floating-point format. This conversion often involves adjusting the number of bits used for the sign, exponent, and mantissa, as well as handling potential loss of precision.
 
 - **Nibble**: 4 bits, can represent 16 values.
 - **Byte**: 8 bits, can represent 256 values.
 - **Hexadecimal**: Each digit represents 4 binary digits, providing a compact representation for binary numbers.
 
+## A General Overview
+
+### Formula for the Value:
+The value of a floating-point number can be calculated using the formula:
+
+$$ (-1)^{\text{sign}} \times 2^{\text{exponent} - \text{bias}} \times 1.\text{mantissa} $$
+
+Let's consider an 8-bit floating-point format for simplicity, though these principles apply to any floating-point representation. In our defined format:
+
+- The **sign** bit is 1 bit.
+- The **exponent** is 3 bits.
+- The **mantissa** is 4 bits.
+
+This totals to an 8-bit format.
+
+### 1. **Sign Bit:**
+   - **Position:** The sign bit is the most significant bit (MSB) and occupies the leftmost position.
+   - **Value:** It indicates the sign of the number. If the bit is `0`, the number is positive; if it is `1`, the number is negative.
+   - **Extraction:** To extract the sign bit, shift the number right by 7 bits and mask with `0x1`. For a number `x`, this is done as `(x >> 7) & 0x1`.
+
+### 2. **Exponent:**
+   - **Position:** The exponent follows the sign bit. With 3 bits, it occupies positions 2 through 4.
+   - **Bias:** The exponent has a bias calculated as \( 2^{(N-1)} - 1 \), where \( N \) is the number of exponent bits. For 3 bits, the bias is \( 2^2 - 1 = 3 \).
+   - **Value Range:** The exponent can range from \(-\text{bias}\) to \( 2^3 - 1 - \text{bias} \), which is from -3 to 4.
+   - **Extraction:** Extract the exponent bits by shifting the number right by 4 and masking with `0x07` (3 bits). For a number `x`, this is done as `(x >> 4) & 0x07`.
+
+### 3. **Mantissa:**
+   - **Position:** The mantissa occupies the remaining bits, from positions 5 through 8 in our 8-bit format.
+   - **Normalization:** In normalized form, the leading bit is implicit and assumed to be 1. For subnormal numbers, this leading bit is not present, and the value is represented only by the mantissa bits.
+   - **Extraction:** Extract the mantissa bits by masking with `0x0F`. For a number `x`, this is done as `x & 0x0F`.
+
+### Example Calculation:
+Consider the example byte `0b11001101` (hexadecimal `0xCD`). Let's break it down:
+
+1. **Sign Bit:** 
+   - Extract: `(0xCD >> 7) & 0x1 = 1`
+   - The sign is `1`, indicating the number is negative.
+
+2. **Exponent:** 
+   - Extract: `(0xCD >> 4) & 0x07 = 0b100 = 4`
+   - Actual Exponent: \( 4 - 3 = 1 \)
+
+3. **Mantissa:**
+   - Extract: `0xCD & 0x0F = 0b1101 = 13`
+   - Normalized form includes an implicit leading 1, so the mantissa becomes `1.1101` in binary.
+
+### Summary:
+
+- **Sign:** Negative (1)
+- **Exponent:** 1 (after bias adjustment)
+- **Mantissa:** 13 (0xD)
+
+Thus, the value is calculated as:
+
+$$ (-1)^1 \times 2^{1} \times 1.1101_2 = -2 \times (1 + 13/16) = -2 \times 1.8125 = -3.625 $$
+
+This example illustrates the breakdown of an 8-bit floating-point format into its sign, exponent, and mantissa components, as well as the calculation of the represented value.
+
+## Mapping representations in C
+
+There is no official hardware representation for a 16-bit floating-point number, so we instead map the result a integer value. We then manipulate the bit representations to get the desired format.
+
+Typically, we map a 32-bit floating-point value to a 32-bit integer value as the internal representation ends up being indentical with little precision loss occurring as a result. This is the easy part. The hard part is converting the values to lower value representations as they end up being lossy (we lose precision during the conversion process).
+
+This is surprisingly straightforward in languages like C and C++ and isn't directly possible in other languages like Python or JavaScript which require a lot of bit hacking to emulate the desired results.
+
+First, we can alias our type for clarity.
+
+```c
+typedef uint32_t float32_t;
+```
+
+Then we can create a `union` allowing us to effectively create a mapping between each numeric representation.
+
+```c
+// Union to map float to internal integer representation
+typedef union {
+    float32_t bits;
+    float     value;
+} float_data_t;
+```
+
+The aliasing name itself doesn't really matter. What does matter is that remain consistent throughout the implementation. In most cases, it's probably simpler to just use the respective types directly for clarity.
+
+The implementation is deceptively elementary from here.
+
+```c
+// Function to encode a float into its IEEE-754 binary32 representation
+float32_t encode_float32(float value) {
+    float_data_t f32;
+    f32.value = value;
+    return f32.bits;
+}
+
+// Function to decode an IEEE-754 binary32 representation into a float
+float decode_float32(float32_t bits) {
+    float_data_t f32;
+    f32.bits = bits;
+    return f32.value;
+}
+```
+
+This creates our foundation for converting between lower precision types such as float16, bfloat16, and our custom 8-bit format which we will implement by the end of this document.
+
 ## The Sign bit
-The sign bit is the first, left-most, bit, which results in 0x80, respectively.
+To keep things simple, we'll focus on a 8-bit format. We can use 16-bit (half-precison) and 32-bit (full-precision) for reference.
+
+The sign bit is the first, left-most, bit, which results in $0x80$ for a 8-bit format, respectively.
 
 We represent the sign bit as $2^1$, e.g. $2^1 = 1 \times 2 = 2$
 
@@ -92,7 +196,7 @@ So, full representation for an unsigned range would be 0 - 255. For unsigned, it
 
 We can use this logic for the exponent and mantissa as well.
 
-#### Exponent
+## The exponent bits
 The exponent is typically the following 8-bits after the sign bit. We decided for a 3-bit exponent.
 
 We represent the exponent as $2^3$, e.g. $2^3 = 1 \times 2 \times 2 \times 2 = 8$
@@ -101,7 +205,7 @@ $0x70 = 0b0111\_0000 = 112$
 
 This is where things get a little tricky for me as I don't have much experience with floating point precision and I've made a lot of attempts to understand it. Admittedly, it still eludes me, but I keep at it regardless, revisiting when I have the bandwidth for it.
 
-#### Mantissa
+## The mantissa bits
 The mantissa is followed 8-bits after the exponent bit set. We decided for a 4-bit mantissa.
 
 We represent the exponent as $2^4$, e.g. $2^4 = 1 \times 2 \times 2 \times 2 \times 2 = 16$
@@ -111,44 +215,6 @@ $0x0f = 0b0000\_1111 = 15$
 #### Conclusion
 
 To be decided...
-
-Your thought process is on the right track, especially in breaking down the components of the 8-bit floating-point representation into sign, exponent, and mantissa bits. Let's go through each part in detail to clarify and solidify the understanding.
-
-### 1. **Sign Bit:**
-   - **Position:** The sign bit is the most significant bit in the 8-bit format, which means it occupies the leftmost position.
-   - **Value:** The sign bit indicates the sign of the number. If the bit is `0`, the number is positive; if it is `1`, the number is negative.
-   - **Extraction:**
-     - You correctly identified the method to extract the sign bit using `(f >> 7) & 0x1` where `f` is the 8-bit representation. This will correctly shift the sign bit to the least significant position and mask out the other bits.
-
-### 2. **Exponent:**
-   - **Position:** In an 8-bit format with a 3-bit exponent, the exponent bits follow the sign bit. These would be the next three bits.
-   - **Bias:** The bias for the exponent is calculated as $2^{(N-1)} - 1$, where $N$ is the number of exponent bits. For 3 bits, the bias is $2^{2} - 1 = 3$.
-   - **Value Range:** The range of the exponent field after biasing is from -3 to 4 (2^3 - 1 = 7).
-   - **Extraction:**
-     - The extraction can be done using `(f >> 4) & 0x07`, which shifts the bits right by 4 (to discard the mantissa bits) and masks the 3 bits for the exponent.
-
-### 3. **Mantissa:**
-   - **Position:** The mantissa follows the exponent bits and occupies the remaining bits in the 8-bit format. In this case, it uses the last four bits.
-   - **Normalization:** In normalized form, the leading bit is implicit and not stored in the representation. However, in subnormal numbers, this implicit bit is not present, and all bits are used for the fraction.
-   - **Extraction:**
-     - The extraction can be done using `f & 0x0F`, which masks out the first 4 bits, leaving the mantissa bits.
-
-### Example Calculation:
-Consider an example byte `0b11001101` (in hexadecimal, 0xCD). Let's break it down:
-
-1. **Sign Bit:** 
-   - Extract with `(0xCD >> 7) & 0x1 = 1`. The sign is negative.
-2. **Exponent:** 
-   - Extract with `(0xCD >> 4) & 0x07 = 0b100 = 4`.
-   - The exponent field is 4, but we must subtract the bias (3) to get the actual exponent: $4 - 3 = 1$.
-3. **Mantissa:**
-   - Extract with `0xCD & 0x0F = 0b1101 = 13`.
-   - In normalized form, the implicit leading 1 bit gives us a fraction: $1.1101_2$.
-
-### Summary:
-- **Sign:** Negative (1)
-- **Exponent:** 1 (after bias adjustment)
-- **Mantissa:** 13 (0xD)
 
 #### Formula for the Value:
 The formula for computing the value is:
