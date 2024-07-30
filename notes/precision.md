@@ -1,39 +1,55 @@
-# Floating-point Precision
+# Floating-Point Precision
 
 ### The Basics
-Each bit representation can be considered as power to a base of 2, e.g. $2^n$ where $n$ represents the number of binary digits and $2$ represents the number of states for each binary digit.
 
-If we have 1 binary digit, then we have $2^1 = 1 \times 2 = 2$ states. Typically, we have at least 4-bits which can be represented as a **nibble** and can be defined as $2^4 = 1 \times 2 \times 2 \times 2 \times 2 = 16$ resulting in 16 binary states.
+In digital systems, numbers are often represented using binary, where each digit (bit) can be either 0 or 1. The value of a binary number can be understood as a sum of powers of 2, with the power corresponding to the position of the bit. For instance, the number represented by the binary digits (bits) can be expressed as:
 
-A **byte** can be defined as $2^8 = 256$ which represents 256 possible states, respectively.
+$$ \text{value} = \sum_{i=0}^{n-1} b_i \times 2^i $$
 
-We only have 4 bits for each **nibble**:
+where $ b_i $ is the ith bit (0 or 1), and $ n $ is the number of bits.
 
-$$0b0000$$
+#### Binary Representations
+- **1-bit**: Can represent $ 2^1 = 2 $ states (0 or 1).
+- **Nibble**: 4 bits can represent $ 2^4 = 16 $ states. Example: 
+  - `0b0000` represents the smallest value (0).
+  - `0b1111` represents the largest value (15).
 
-Following this logic, 8 bits represents each **byte**:
+- **Byte**: 8 bits can represent $ 2^8 = 256 $ states. Example:
+  - `0b0000_0000` represents the smallest value (0).
+  - `0b1111_1111` represents the largest value (255).
 
-$$0b0000\_0000$$
+#### Hexadecimal Notation
+Each hexadecimal digit can represent four binary digits (bits). This is because a single hex digit has 16 possible values (0-15), which matches the 16 possible combinations of four binary digits.
 
-Each hexadecimal value represents 4 bits, e.g.,
+- **1 in Hexadecimal**: 
+  - Decimal: $ 1_{10} $
+  - Hexadecimal: $ 1_{16} $
+  - Binary: $ 0b0001 $
 
-$$1_{10} = 1_{16} = 0001_2$$
+- **Hexadecimal to Binary Conversion**:
+  - $ 0x0 = 0b0000 $
+  - $ 0x1 = 0b0001 $
+  - $ 0x2 = 0b0010 $
+  - ...
+  - $ 0xF = 0b1111 $
 
-or
+Since each hex digit corresponds to four binary digits, a two-digit hex number represents eight binary digits. For example:
 
-$$1 = 0x1 = 0b0001$$
+- $ 0x00 = 0b0000\_0000 $
 
-Since $0x0$ represents 4 binary digits:
+Expanding this:
 
-$$0x0 = 0b0000$$
+- $ 0x0000 = 0b0000\_0000\_0000\_0000 $
 
-It follows that each hex digit adds an extra group of 4 binary digits, so $0x00$ represents eight binary digits:
+Here, $ 0x0000 $ represents 16 binary digits (bits), as each hex digit corresponds to four binary digits.
 
-$$0x00 = 0b0000\_0000$$
+### Summary
 
-In turn, $0x0000$ represents 16 binary digits or 4 hexadecimal digits times 4 groups of binary digits, resulting in 16 binary digits:
+Understanding these representations is crucial when converting between different floating-point formats, such as from a 32-bit to a 16-bit floating-point format. This conversion often involves adjusting the number of bits used for the sign, exponent, and mantissa, as well as handling potential loss of precision.
 
-$$0x0000 = 0b0000\_0000\_0000\_0000$$
+- **Nibble**: 4 bits, can represent 16 values.
+- **Byte**: 8 bits, can represent 256 values.
+- **Hexadecimal**: Each digit represents 4 binary digits, providing a compact representation for binary numbers.
 
 #### Sign bit
 The sign bit is the first, left-most, bit, which results in 0x80, respectively.
@@ -106,7 +122,7 @@ Your thought process is on the right track, especially in breaking down the comp
 
 ### 2. **Exponent:**
    - **Position:** In an 8-bit format with a 3-bit exponent, the exponent bits follow the sign bit. These would be the next three bits.
-   - **Bias:** The bias for the exponent is calculated as \(2^{(N-1)} - 1\), where \(N\) is the number of exponent bits. For 3 bits, the bias is \(2^{2} - 1 = 3\).
+   - **Bias:** The bias for the exponent is calculated as $2^{(N-1)} - 1$, where $N$ is the number of exponent bits. For 3 bits, the bias is $2^{2} - 1 = 3$.
    - **Value Range:** The range of the exponent field after biasing is from -3 to 4 (2^3 - 1 = 7).
    - **Extraction:**
      - The extraction can be done using `(f >> 4) & 0x07`, which shifts the bits right by 4 (to discard the mantissa bits) and masks the 3 bits for the exponent.
@@ -124,10 +140,10 @@ Consider an example byte `0b11001101` (in hexadecimal, 0xCD). Let's break it dow
    - Extract with `(0xCD >> 7) & 0x1 = 1`. The sign is negative.
 2. **Exponent:** 
    - Extract with `(0xCD >> 4) & 0x07 = 0b100 = 4`.
-   - The exponent field is 4, but we must subtract the bias (3) to get the actual exponent: \(4 - 3 = 1\).
+   - The exponent field is 4, but we must subtract the bias (3) to get the actual exponent: $4 - 3 = 1$.
 3. **Mantissa:**
    - Extract with `0xCD & 0x0F = 0b1101 = 13`.
-   - In normalized form, the implicit leading 1 bit gives us a fraction: \(1.1101_2\).
+   - In normalized form, the implicit leading 1 bit gives us a fraction: $1.1101_2$.
 
 ### Summary:
 - **Sign:** Negative (1)
