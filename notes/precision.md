@@ -49,6 +49,12 @@ Understanding these representations is crucial when converting between different
 - **Byte**: 8 bits, can represent 256 values.
 - **Hexadecimal**: Each digit represents 4 binary digits, providing a compact representation for binary numbers.
 
+As a simple example, the value $0b1101$ can be calculated as:
+
+$$ 0b1101 = (2^3 \times 1) + (2^2 \times 1) + (2^1 \times 0) + (2^0 \times 1) = 8 + 4 + 1 = 13 $$
+
+This example illustrates the calculation for a 4-bit binary representation in base 2 to its decimal representation in base 10.
+
 ## A General Overview
 
 ### Formula for the Value:
