@@ -71,8 +71,8 @@ This totals to an 8-bit format.
 
 ### 2. **Exponent:**
    - **Position:** The exponent follows the sign bit. With 3 bits, it occupies positions 2 through 4.
-   - **Bias:** The exponent has a bias calculated as \( 2^{(N-1)} - 1 \), where \( N \) is the number of exponent bits. For 3 bits, the bias is \( 2^2 - 1 = 3 \).
-   - **Value Range:** The exponent can range from \(-\text{bias}\) to \( 2^3 - 1 - \text{bias} \), which is from -3 to 4.
+   - **Bias:** The exponent has a bias calculated as $ 2^{(N-1)} - 1 $, where $ N $ is the number of exponent bits. For 3 bits, the bias is $ 2^2 - 1 = 3 $.
+   - **Value Range:** The exponent can range from $-\text{bias}$ to $ 2^3 - 1 - \text{bias} $, which is from -3 to 4.
    - **Extraction:** Extract the exponent bits by shifting the number right by 4 and masking with `0x07` (3 bits). For a number `x`, this is done as `(x >> 4) & 0x07`.
 
 ### 3. **Mantissa:**
@@ -89,7 +89,7 @@ Consider the example byte `0b11001101` (hexadecimal `0xCD`). Let's break it down
 
 2. **Exponent:** 
    - Extract: `(0xCD >> 4) & 0x07 = 0b100 = 4`
-   - Actual Exponent: \( 4 - 3 = 1 \)
+   - Actual Exponent: $ 4 - 3 = 1 $
 
 3. **Mantissa:**
    - Extract: `0xCD & 0x0F = 0b1101 = 13`
@@ -107,33 +107,35 @@ $$ (-1)^1 \times 2^{1} \times 1.1101_2 = -2 \times (1 + 13/16) = -2 \times 1.812
 
 This example illustrates the breakdown of an 8-bit floating-point format into its sign, exponent, and mantissa components, as well as the calculation of the represented value.
 
-## Mapping representations in C
+## Mapping Representations in C
 
-There is no official hardware representation for a 16-bit floating-point number, so we instead map the result a integer value. We then manipulate the bit representations to get the desired format.
+### Overview
+In hardware, there's no native support for a 16-bit floating-point format, so we often use an integer type to represent these smaller formats. By manipulating the bits, we can encode and decode these representations as needed. This process is straightforward in C and C++ due to their low-level memory access, while languages like Python and JavaScript require more effort to emulate the same functionality.
 
-Typically, we map a 32-bit floating-point value to a 32-bit integer value as the internal representation ends up being indentical with little precision loss occurring as a result. This is the easy part. The hard part is converting the values to lower value representations as they end up being lossy (we lose precision during the conversion process).
-
-This is surprisingly straightforward in languages like C and C++ and isn't directly possible in other languages like Python or JavaScript which require a lot of bit hacking to emulate the desired results.
-
-First, we can alias our type for clarity.
+### Aliasing for Clarity
+First, we alias a type for clarity:
 
 ```c
 typedef uint32_t float32_t;
 ```
 
-Then we can create a `union` allowing us to effectively create a mapping between each numeric representation.
+Here, `float32_t` serves as an alias for a 32-bit unsigned integer, which will hold the bit representation of a 32-bit floating-point number.
+
+### Using a Union for Type Mapping
+To facilitate conversion between the float and its bit representation, we use a `union`:
 
 ```c
 // Union to map float to internal integer representation
 typedef union {
-    float32_t bits;
-    float     value;
+    float32_t bits; // 32-bit integer representation
+    float     value; // Floating-point value
 } float_data_t;
 ```
 
-The aliasing name itself doesn't really matter. What does matter is that remain consistent throughout the implementation. In most cases, it's probably simpler to just use the respective types directly for clarity.
+In this union, `float_data_t`, the `bits` member represents the float as a 32-bit integer, while the `value` member represents the float in its usual floating-point form. The union allows us to access the same data in memory as either a float or its bitwise integer representation.
 
-The implementation is deceptively elementary from here.
+### Encoding and Decoding Functions
+The functions to encode and decode between these representations are straightforward:
 
 ```c
 // Function to encode a float into its IEEE-754 binary32 representation
@@ -151,7 +153,14 @@ float decode_float32(float32_t bits) {
 }
 ```
 
-This creates our foundation for converting between lower precision types such as float16, bfloat16, and our custom 8-bit format which we will implement by the end of this document.
+- **`encode_float32` Function**: This function takes a `float` as input and returns its bit representation as a `float32_t`. We store the float in the union's `value` member and then return the `bits` member, which contains the same data in integer form.
+
+- **`decode_float32` Function**: This function takes a `float32_t` representing the bitwise data of a float and converts it back to the `float` type. We assign the integer bits to the union's `bits` member and return the `value` member, retrieving the original floating-point value.
+
+### Purpose and Future Directions
+This setup serves as a foundation for converting between higher precision (e.g., 32-bit float) and lower precision formats (e.g., 16-bit float, 8-bit custom formats). Lower precision formats often lead to precision loss due to fewer bits being used to represent the number, which is an important consideration in such conversions.
+
+We will continue to build on this foundation to implement conversions to formats like float16, bfloat16, and custom 8-bit formats, where precision considerations become even more critical.
 
 ## The Sign bit
 To keep things simple, we'll focus on a 8-bit format. We can use 16-bit (half-precison) and 32-bit (full-precision) for reference.
