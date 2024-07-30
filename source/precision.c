@@ -142,6 +142,12 @@ float decode_bfloat16(bfloat16_t bits) {
     // with a 32-bit layout, e.g. the sign bit and exponent are the same and the
     // mantissa is simply expanded as a result. Therefore, it's probably safe to
     // just bit shift back to a 32-bit form. This requires testing to verify.
+    // e.g.
+    // // Function to decode a bfloat16 representation into a float
+    // float decode_bfloat16(bfloat16_t bits) {
+    //     uint32_t result = ((uint32_t)bits) << 16;
+    //     return decode_float32(result);
+    // }
     uint32_t result = ((uint32_t) bits) << 16;
 
     // Check for NaN or infinity
@@ -159,11 +165,9 @@ float decode_bfloat16(bfloat16_t bits) {
 }
 
 // Convert a 32-bit floating-point number to a 8-bit floating-point number
-float16_t encode_float8(float8_t value) {
+float8_t encode_float8(float value) {
     // TODO: This is not right, but uses 16-bit conversion as a guide
-    float_data_t f32;
-    f32.value  = value;
-    uint32_t f = f32.bits;
+    uint32_t f = encode_float32(value);
 
     uint32_t sign     = (f >> 16) & 0x8000;
     uint32_t exponent = ((f >> 23) & 0xFF) - 127 + 15;
