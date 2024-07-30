@@ -1,6 +1,6 @@
 # Floating-Point Precision
 
-### The Basics
+## The Basics
 
 In digital systems, numbers are often represented using binary, where each digit (bit) can be either 0 or 1. The value of a binary number can be understood as a sum of powers of 2, with the power corresponding to the position of the bit. For instance, the number represented by the binary digits (bits) can be expressed as:
 
@@ -8,7 +8,7 @@ $$ \text{value} = \sum_{i=0}^{n-1} b_i \times 2^i $$
 
 where $ b_i $ is the ith bit (0 or 1), and $ n $ is the number of bits.
 
-#### Binary Representations
+### Binary Representations
 - **1-bit**: Can represent $ 2^1 = 2 $ states (0 or 1).
 - **Nibble**: 4 bits can represent $ 2^4 = 16 $ states. Example: 
   - `0b0000` represents the smallest value (0).
@@ -18,7 +18,7 @@ where $ b_i $ is the ith bit (0 or 1), and $ n $ is the number of bits.
   - `0b0000_0000` represents the smallest value (0).
   - `0b1111_1111` represents the largest value (255).
 
-#### Hexadecimal Notation
+### Hexadecimal Notation
 Each hexadecimal digit can represent four binary digits (bits). This is because a single hex digit has 16 possible values (0-15), which matches the 16 possible combinations of four binary digits.
 
 - **1 in Hexadecimal**: 
@@ -51,7 +51,7 @@ Understanding these representations is crucial when converting between different
 - **Byte**: 8 bits, can represent 256 values.
 - **Hexadecimal**: Each digit represents 4 binary digits, providing a compact representation for binary numbers.
 
-#### Sign bit
+## The Sign bit
 The sign bit is the first, left-most, bit, which results in 0x80, respectively.
 
 We represent the sign bit as $2^1$, e.g. $2^1 = 1 \times 2 = 2$
