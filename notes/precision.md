@@ -43,6 +43,7 @@ Expanding this:
 
 Here, $ 0x0000 $ represents 16 binary digits (bits), as each hex digit corresponds to four binary digits.
 
+### Example Calculation:
 Understanding these representations is crucial when converting between different floating-point formats, such as from a 32-bit to a 16-bit floating-point format. This conversion often involves adjusting the number of bits used for the sign, exponent, and mantissa, as well as handling potential loss of precision.
 
 - **Nibble**: 4 bits, can represent 16 values.
@@ -101,13 +102,13 @@ Consider the example byte `0b11001101` (hexadecimal `0xCD`). Let's break it down
    - Extract: `0xCD & 0x0F = 0b1101 = 13`
    - Normalized form includes an implicit leading 1, so the mantissa becomes `1.1101` in binary.
 
-### Summary:
+We can define the sign, exponent, and mantissa with the following values:
 
 - **Sign:** Negative (1)
 - **Exponent:** 1 (after bias adjustment)
 - **Mantissa:** 13 (0xD)
 
-Thus, the value is calculated as:
+Then we can calculate the value as:
 
 $$ (-1)^1 \times 2^{1} \times 1.1101_2 = -2 \times (1 + 13/16) = -2 \times 1.8125 = -3.625 $$
 
@@ -168,48 +169,79 @@ This setup serves as a foundation for converting between higher precision (e.g.,
 
 We will continue to build on this foundation to implement conversions to formats like float16, bfloat16, and custom 8-bit formats, where precision considerations become even more critical.
 
-## The Sign bit
-To keep things simple, we'll focus on a 8-bit format. We can use 16-bit (half-precison) and 32-bit (full-precision) for reference.
+## The Sign Bit
 
-The sign bit is the first, left-most, bit, which results in $0x80$ for a 8-bit format, respectively.
+### Overview
+In floating-point representations, the sign bit determines whether the number is positive or negative. We will discuss the extraction of the sign bit in various formats, focusing on an 8-bit format for simplicity and using 16-bit (half-precision) and 32-bit (single-precision) formats for reference.
 
-We represent the sign bit as $2^1$, e.g. $2^1 = 1 \times 2 = 2$
+### Bit Representation
 
-$$0x80 = 0b1000\_0000 = 128$$
+For an 8-bit floating-point format:
+- **Sign bit**: The most significant bit (MSB) determines the sign of the number.
 
-We can follow this logic to validate it by scaling up to 16-bit to verify.
+Representation:
+- **8-bit format**: Sign bit mask is `0x80`, which equals `0b10000000` in binary or `128` in decimal.
 
-$$0x8000 = 1000\_0000\_0000\_0000 = 32\_768$$
+For comparison:
+- **16-bit format**: Sign bit mask is `0x8000` (`0b1000000000000000` in binary or `32,768` in decimal).
+- **32-bit format**: Sign bit mask is `0x80000000` (`0b10000000000000000000000000000000` in binary or `2,147,483,648` in decimal).
 
-We can scale up to 32-bit as well.
+### Sign Bit Extraction
 
-$$0x80000000 = 1000\_0000\_0000\_0000\_0000\_0000\_0000\_0000 = 2\_147\_483\_648$$
+The sign bit extraction process involves shifting the number to position the sign bit at the least significant bit (LSB) and then masking it.
 
-If we shift the sign bit over 24 places, we should land on the 8th bit, respectively.
+#### 8-bit Format Extraction
 
-```c
-uint32_t sign = (f >> 24) & 0x80;
-```
+For an assumed layout:
+- **1 bit** for the sign (MSB)
+- **3 bits** for the exponent
+- **4 bits** for the mantissa
 
-Since a 16-bit sign bit is defined as:
-
-$$0b1\underbrace{......}_{30bits}$$
-
-```c
-uint32_t sign = (f >> 16) & 0x8000;
-```
-
-It should be represented like this for little endian systems, where the least significant bits are stored first and read right-to-left:
+To extract the sign bit:
 
 ```c
-uint32_t sign = (f >> 24) & 0x80;
+uint32_t sign = (x >> 7) & 0x1;
 ```
 
-This line of code checks whether the eighth bit in a set of 32 bits is set.
+- **Shift Right by 7 Bits**: Moves the sign bit to the LSB position.
+- **Mask with `0x1`**: Ensures only the sign bit remains.
 
-So, full representation for an unsigned range would be 0 - 255. For unsigned, it would be -126 - 127 depending on how we decide to implement it. It's probably best we just follow convention with this.
+**Example**: If `x = 0b11001101`, shifting right by 7 yields `0b00000001`. Masking with `0x1` results in `0b1` (sign = 1).
 
-We can use this logic for the exponent and mantissa as well.
+#### 16-bit Format Extraction
+
+For a typical layout:
+- **1 bit** for the sign (MSB)
+- **5 bits** for the exponent
+- **10 bits** for the mantissa
+
+To extract the sign bit:
+
+```c
+uint32_t sign = (f >> 15) & 0x1;
+```
+
+- **Shift Right by 15 Bits**: Positions the sign bit at the LSB.
+- **Mask with `0x1`**: Isolates the sign bit.
+
+Alternatively, to directly check the sign bit without shifting:
+
+```c
+uint32_t sign = f & 0x8000;
+```
+
+- **Mask with `0x8000`**: Isolates the sign bit in the original 16-bit representation.
+
+### Key Considerations
+
+1. **Bit Size and Shift Amount**: The amount shifted corresponds to the position of the sign bit in the representation. For an 8-bit format, the sign bit is at position 7; for a 16-bit format, it is at position 15.
+
+2. **Masking**: After shifting, masking with `0x1` isolates the sign bit. Alternatively, directly masking (e.g., `0x8000` for 16-bit) can be used without shifting.
+
+3. **Endianness**: While the bitwise extraction logic remains consistent, endianness affects the byte order in memory. This section assumes a big-endian representation, where the most significant byte is stored first.
+
+### Conclusion
+Extracting the sign bit from a floating-point number involves determining the correct bit position and applying appropriate bitwise operations. This ensures accurate extraction and interpretation of the sign bit across different floating-point formats.
 
 ## The exponent bits
 The exponent is typically the following 8-bits after the sign bit. We decided for a 3-bit exponent.
