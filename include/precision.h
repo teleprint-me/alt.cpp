@@ -71,4 +71,7 @@ float     decode_float16(float16_t bits);
 bfloat16_t encode_bfloat16(float value);
 float      decode_bfloat16(bfloat16_t bits);
 
+float8_t encode_float8(float value);
+float    decode_float8(float8_t bits);
+
 #endif // ALT_PRECISION_H
