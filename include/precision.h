@@ -61,7 +61,7 @@ typedef uint8_t  float8_t;
  * @param value The actual 32-bit floating-point value represented by this data
  * structure.
  */
-typedef union {
+typedef union float_data_t {
     float32_t bits;
     float     value;
 } float_data_t;
@@ -75,7 +75,7 @@ typedef union {
  * @param type   Indicates the specific precision or format (e.g., float32,
  * bfloat16)
  */
-typedef struct {
+typedef struct float_flex_t {
     float_data_t value;
     data_type_t  type;
 } float_flex_t;
