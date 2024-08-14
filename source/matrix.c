@@ -20,45 +20,37 @@
 #include <stdio.h>
 #include <string.h>
 
-// Matrix operations
-matrix_t* matrix_create(size_t columns, size_t rows) {
+matrix_t* matrix_create(const size_t rows, const size_t columns) {
     matrix_t* matrix = (matrix_t*) malloc(sizeof(matrix_t));
     if (NULL == matrix) {
-        fprintf(stderr, "Failed to allocate memory for matrix_t.\n");
+        LOG(&global_logger,
+            LOG_LEVEL_ERROR,
+            "Failed to allocate memory for matrix_t.\n");
         return NULL;
     }
 
-    matrix->elements = (float**) malloc(rows * sizeof(float*));
+    // Allocate a single block of memory for the matrix elements
+    matrix->elements = (float*) malloc(rows * columns * sizeof(float));
     if (NULL == matrix->elements) {
-        fprintf(stderr, "Failed to allocate memory for matrix rows.\n");
+        LOG(&global_logger,
+            LOG_LEVEL_ERROR,
+            "Failed to allocate memory for matrix elements.\n");
         free(matrix);
         return NULL;
     }
 
-    for (size_t i = 0; i < rows; ++i) {
-        matrix->elements[i] = (float*) malloc(columns * sizeof(float));
-        if (NULL == matrix->elements[i]) {
-            fprintf(stderr, "Failed to allocate memory for matrix columns.\n");
-            // Free previously allocated rows
-            for (size_t j = 0; j < i; ++j) {
-                free(matrix->elements[j]);
-            }
-            free(matrix->elements);
-            free(matrix);
-            return NULL;
-        }
-        memset(matrix->elements[i], 0, columns * sizeof(float));
-    }
+    // Initialize all elements to zero
+    memset(matrix->elements, 0, rows * columns * sizeof(float));
 
-    matrix->columns = columns;
     matrix->rows    = rows;
+    matrix->columns = columns;
 
     return matrix;
 }
 
 void matrix_free(matrix_t* matrix) {
     if (NULL == matrix) {
-        fprintf(stderr, "Cannot free a NULL matrix.\n");
+        LOG(&global_logger, LOG_LEVEL_ERROR, "Cannot free a NULL matrix.\n");
         return;
     }
 
