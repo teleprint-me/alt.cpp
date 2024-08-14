@@ -60,3 +60,15 @@ void matrix_free(matrix_t* matrix) {
 
     free(matrix);
 }
+
+float matrix_get_element(
+    const matrix_t* matrix, const size_t row, const size_t column
+) {
+    return matrix->elements[row * matrix->columns + column];
+}
+
+void matrix_set_element(
+    matrix_t* matrix, const size_t row, const size_t column, const float value
+) {
+    matrix->elements[row * matrix->columns + column] = value;
+}
