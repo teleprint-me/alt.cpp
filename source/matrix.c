@@ -72,3 +72,36 @@ void matrix_set_element(
 ) {
     matrix->elements[row * matrix->columns + column] = value;
 }
+
+bool matrix_is_zero(const matrix_t* matrix) {
+    for (size_t i = 0; i < matrix->rows * matrix->columns; i++) {
+        if (matrix->elements[i] != 0.0f) {
+            return false;
+        }
+    }
+    return true;
+}
+
+bool matrix_is_square(const matrix_t* matrix) {
+    return matrix->rows == matrix->columns;
+}
+
+bool matrix_is_transposed(const matrix_t* matrix) {
+    return matrix->is_transposed;
+}
+
+bool matrix_is_identity(const matrix_t* matrix) {
+    if (!matrix_is_square(matrix)) {
+        return false;
+    }
+
+    for (size_t i = 0; i < matrix->rows; i++) {
+        for (size_t j = 0; j < matrix->columns; j++) {
+            float value = matrix->elements[i * matrix->columns + j];
+            if ((i == j && value != 1.0f) || (i != j && value != 0.0f)) {
+                return false;
+            }
+        }
+    }
+    return true;
+}
