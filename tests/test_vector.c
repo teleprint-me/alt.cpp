@@ -1,4 +1,6 @@
 /**
+ * Copyright © 2024 Austin Berrio
+ *
  * @file tests/test_vector.c
  *
  * @note keep fixtures and related tests as simple as reasonably possible. The
@@ -15,6 +17,9 @@
 #include <string.h>
 
 /** Prototypes */
+
+// Math utils
+bool float_is_close(float a, float b, float relative, float absolute);
 
 // Test fixtures
 vector_t* vector_2d_fixture(float x, float y);
@@ -39,14 +44,41 @@ bool test_vector_magnitude(void);
 bool test_vector_distance(void);
 bool test_vector_mean(void);
 bool test_vector_normalize(void);
+
 // Special vector operations
 bool test_vector_dot_product(void);
 bool test_vector_cross_product(void);
+
 // Special vector coordinates
-bool test_vector_polar_to_cartesian(void);
-bool test_vector_cartesian_to_polar(void);
+// TODO
+// bool test_vector_polar_to_cartesian(void);
+// bool test_vector_cartesian_to_polar(void);
 
 /** Fixtures */
+
+/**
+ * @brief Determines if two floating-point values are approximately equal within
+ * specified tolerances.
+ *
+ * This function checks whether the absolute difference between 'a' and 'b' is
+ * less than or equal to the tolerance bounds, defined by both a relative
+ * threshold (default: 1e-03) and an absolute threshold (default: 0.0).
+ *
+ * @param[in]   a       The first floating-point value.
+ * @param[in]   b       The second floating-point value.
+ * @param[in]   relative Relative tolerance for comparing values (default:
+ * 1e-03).
+ * @param[in]   absolute Absolute tolerance for comparing values (default: 0.0).
+ *
+ * @return true if the absolute difference between 'a' and 'b' is within the
+ * tolerance bounds, false otherwise.
+ */
+bool float_is_close(
+    float a, float b, float relative /*= 1e-3f*/, float absolute /*= 0.0f*/
+) {
+    return fabsf(a - b)
+           <= fmaxf(relative * fmaxf(fabsf(a), fabsf(b)), absolute);
+}
 
 /**
  * @brief Creates a new vector object with specified x and y coordinates
@@ -366,6 +398,36 @@ bool test_vector_magnitude(void) {
     return result;
 }
 
+bool test_vector_distance(void) {
+    bool result = false; // set to true once implemented
+    printf("%s", result ? "." : "x");
+    return result;
+}
+
+bool test_vector_mean(void) {
+    bool result = false; // set to true once implemented
+    printf("%s", result ? "." : "x");
+    return result;
+}
+
+bool test_vector_normalize(void) {
+    bool result = false; // set to true once implemented
+    printf("%s", result ? "." : "x");
+    return result;
+}
+
+bool test_vector_dot_product(void) {
+    bool result = false; // set to true once implemented
+    printf("%s", result ? "." : "x");
+    return result;
+}
+
+bool test_vector_cross_product(void) {
+    bool result = false; // set to true once implemented
+    printf("%s", result ? "." : "x");
+    return result;
+}
+
 bool test_vector_vector_elementwise_operation(
     const char* operation_label,
     // Function pointer for expected result calculation
@@ -462,6 +524,7 @@ int main(void) {
     result &= test_vector_dot_product();
     result &= test_vector_cross_product();
 
+    printf("\n");
     if (result) {
         printf("All tests passed.\n");
     } else {
