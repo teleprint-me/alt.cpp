@@ -65,7 +65,7 @@ matrix_t* matrix_create(size_t rows, size_t columns);
  *
  * @mat: The matrix to be freed.
  */
-void matrix_free(matrix_t* mat);
+void matrix_free(matrix_t* matrix);
 
 float get_element(matrix_t* matrix, size_t row, size_t col);
 void  set_element(matrix_t* matrix, size_t row, size_t col, float value);
