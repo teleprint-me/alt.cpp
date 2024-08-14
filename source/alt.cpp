@@ -6,7 +6,7 @@
 #include "../imgui/backends/imgui_impl_glfw.h"
 #include "../imgui/backends/imgui_impl_opengl3.h"
 #include "../imgui/imgui.h"
-#include "../include/log.h"
+#include "../include/logger.h"
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 #include <cstdlib>
@@ -43,7 +43,7 @@ GLFWwindow* create_parent_glfw_window(
 ImGuiIO* register_parent_glfw_window_with_imgui(GLFWwindow* pwindow, struct Logger* logger) {
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
-    ImGuiIO& io = ImGui::GetIO();
+    ImGuiIO &io = ImGui::GetIO();
     ImGui::StyleColorsDark();
 
     ImGui_ImplGlfw_InitForOpenGL(pwindow, true);
@@ -55,7 +55,7 @@ ImGuiIO* register_parent_glfw_window_with_imgui(GLFWwindow* pwindow, struct Logg
 
 int main(void) {
     // Create the logger; no file to avoid clutter during development.
-    struct Logger* logger = create_logger(LOG_LEVEL_DEBUG, LOG_TYPE_STREAM, NULL);
+    struct Logger* logger = logger_create(LOG_LEVEL_DEBUG, LOG_TYPE_STREAM, NULL);
 
     // create the glfw parent window to generate the root context.
     GLFWwindow* parent_window = create_parent_glfw_window(1280, 720, "alt.cpp", NULL, logger);
@@ -70,7 +70,7 @@ int main(void) {
     std::string prompt         = "Once upon a time";
     std::string generated_text = " a prompt generation was faked by a program named Alt.";
 
-    log_message(logger, LOG_LEVEL_INFO, "Generated text: %s\n", generated_text.c_str());
+    logger_message(logger, LOG_LEVEL_INFO, "Generated text: %s\n", generated_text.c_str());
 
     while (!glfwWindowShouldClose(parent_window)) {
         glfwPollEvents();
