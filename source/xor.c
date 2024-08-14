@@ -39,11 +39,14 @@
  *
  * @param elements A N-dimensional pointer to an array of floats, representing
  * the matrix elements.
- * @param columns  The number of columns (width) of the matrix.
  * @param rows     The number of rows (height) of the matrix.
+ * @param columns  The number of columns (width) of the matrix.
  */
 typedef struct {
     float* elements; ///< N-dimensional array representing the matrix elements.
+
+    bool is_transposed; ///< A boolean value indicating if the matrix is
+                        ///< transposed
 
     size_t rows;    ///< The number of rows (height) of the matrix.
     size_t columns; ///< The number of columns (width) of the matrix.
@@ -63,12 +66,41 @@ matrix_t* matrix_create(size_t rows, size_t columns);
 /**
  * matrix_free - Free a previously allocated matrix and its data.
  *
- * @mat: The matrix to be freed.
+ * @matrix: The matrix to be freed.
  */
 void matrix_free(matrix_t* matrix);
 
-float get_element(matrix_t* matrix, size_t row, size_t col);
-void  set_element(matrix_t* matrix, size_t row, size_t col, float value);
+/**
+ * get_element - Retrieve the value of an element at the given row and column
+ *              indexes from a 2D matrix.
+ *
+ * @matrix: The input matrix to access the element from.
+ * @row: The row index of the desired element.
+ * @column: The column index of the desired element.
+ *
+ * Returns: The value of the given matrix element as a single-precision floating
+ *         point number.
+ */
+float matrix_get_element(matrix_t* matrix, size_t row, size_t column);
+
+/**
+ * set_element - Set or update the value of an element at the given row and
+ * column indexes in a 2D matrix with a new single-precision floating point
+ *              number.
+ *
+ * @matrix: The input/output matrix to modify the specified element's value.
+ * @row: The row index of the desired element.
+ * @column: The column index of the desired element.
+ * @value: The new single-precision floating point value for the given matrix
+ *         element.
+ */
+void matrix_set_element(
+    matrix_t* matrix, size_t row, size_t column, float value
+);
+
+bool matrix_is_zero(matrix_t* matrix);
+bool matrix_is_square(matrix_t* matrix);
+bool matrix_is_transposed(matrix_t* matrix);
 
 matrix_t* matrix_mat_mul(matrix_t* a, matrix_t* b);
 
@@ -95,8 +127,8 @@ matrix_t* matrix_create(size_t rows, size_t columns) {
     // Initialize all elements to zero
     memset(matrix->elements, 0, rows * columns * sizeof(float));
 
-    matrix->columns = columns;
     matrix->rows    = rows;
+    matrix->columns = columns;
 
     return matrix;
 }
@@ -114,10 +146,12 @@ void matrix_free(matrix_t* matrix) {
     free(matrix);
 }
 
-float get_element(matrix_t* matrix, size_t row, size_t col) {
-    return matrix->elements[row * matrix->columns + col];
+float matrix_get_element(matrix_t* matrix, size_t row, size_t column) {
+    return matrix->elements[row * matrix->columns + column];
 }
 
-void set_element(matrix_t* matrix, size_t row, size_t col, float value) {
-    matrix->elements[row * matrix->columns + col] = value;
+void matrix_set_element(
+    matrix_t* matrix, size_t row, size_t column, float value
+) {
+    matrix->elements[row * matrix->columns + column] = value;
 }
