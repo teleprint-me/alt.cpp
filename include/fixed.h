@@ -4,7 +4,7 @@
 #ifndef FIXED_H
 #define FIXED_H
 
-#include <cstdint>
+#include <stdint.h>
 
 // Define constants for Lookup Table (LUT) and Fixed-Point Arithmetic
 #define LUT_MAX_SIZE      1000  // Maximum allowable size of the LUT
