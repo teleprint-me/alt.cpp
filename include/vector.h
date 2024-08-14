@@ -32,7 +32,7 @@
  * @param elements   One-dimensional array of elements representing a vector.
  * @param dimensions The number of dimensions for the vector.
  */
-typedef struct {
+typedef struct Vector {
     float*
         elements; ///< One-dimensional array of elements representing a vector.
     size_t dimensions; ///< The number of dimensions for the vector.
