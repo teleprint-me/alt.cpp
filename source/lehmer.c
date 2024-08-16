@@ -8,14 +8,16 @@
  * Title: Random number generators: good ones are hard to find
  * Paper: https://dl.acm.org/doi/10.1145/63039.63042
  * Source: https://www.cs.wm.edu/~va/software/park/park.html
+ *
+ * If you get stuck, see the following for more details:
+ * https://math.libretexts.org/Bookshelves/Combinatorics_and_Discrete_Mathematics/Discrete_Mathematics_(Levin)
+ * - Reference 1.2 Binomial Coefficients for definitions
+ * - Reference 5.1 Generating Functions for details
  */
 
 #include "lehmer.h"
 
-#include <stdbool.h>
-#include <stdint.h>
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
 
 // Create and initialize the state with dynamic stream handling
