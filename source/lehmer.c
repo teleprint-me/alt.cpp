@@ -1,7 +1,7 @@
 /**
  * Copyright © 2024 Austin Berrio
  *
- * @file examples/simple-lehmer.c
+ * @file source/lehmer.c
  *
  * A simple implementation of the lehmer random number generator in pure C
  *
