@@ -44,11 +44,8 @@ void lehmer_free_state(lehmer_state_t* state) {
 }
 
 void lehmer_set_seed(lehmer_state_t* state, uint64_t value) {
-    if (value > 0) {
-        value = value % MODULUS; // Ensure seed is within the modulus range
-    } else {
-        value = ((uint64_t) time(NULL)) % MODULUS; // Use current time as seed
-    }
+    // Ensure seed is within the modulus range
+    value                      = value % MODULUS;
     state->seed[state->stream] = value;
 }
 
@@ -75,14 +72,10 @@ void lehmer_seed_streams(lehmer_state_t* state, uint64_t value) {
 
     // Initialize remaining streams based on the first one
     for (size_t i = 1; i < state->size; i++) {
-        uint64_t new_seed = A256 * (state->seed[i - 1] % quotient)
-                            - remainder * (state->seed[i - 1] / quotient);
-
-        if (new_seed > 0) {
-            state->seed[i] = new_seed;
-        } else {
-            state->seed[i] = new_seed + MODULUS;
-        }
+        // Explicitly typecast signed results
+        state->seed[i]
+            = (uint64_t) (A256 * (state->seed[i - 1] % quotient)
+                          - remainder * (state->seed[i - 1] / quotient));
     }
 
     state->initialized = true;
@@ -92,16 +85,13 @@ void lehmer_seed_streams(lehmer_state_t* state, uint64_t value) {
 double lehmer_generate(lehmer_state_t* state) {
     const uint64_t quotient  = MODULUS / MULTIPLIER;
     const uint64_t remainder = MODULUS % MULTIPLIER;
-    uint64_t       new_seed;
 
-    new_seed = MULTIPLIER * (state->seed[state->stream] % quotient)
-               - remainder * (state->seed[state->stream] / quotient);
+    // Explicitly typecast signed results
+    uint64_t new_seed
+        = (uint64_t) (MULTIPLIER * (state->seed[state->stream] % quotient)
+                      - remainder * (state->seed[state->stream] / quotient));
 
-    if (new_seed > 0) {
-        state->seed[state->stream] = new_seed;
-    } else {
-        state->seed[state->stream] = new_seed + MODULUS;
-    }
+    state->seed[state->stream] = new_seed;
 
     return ((double) state->seed[state->stream] / MODULUS);
 }
