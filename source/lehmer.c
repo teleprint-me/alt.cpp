@@ -3,7 +3,7 @@
  *
  * @file source/lehmer.c
  *
- * A simple implementation of the lehmer random number generator in pure C
+ * @brief A simple implementation of the Lehmer RNG in pure C
  *
  * Title: Random number generators: good ones are hard to find
  * Paper: https://dl.acm.org/doi/10.1145/63039.63042
@@ -17,20 +17,17 @@
 
 #include "lehmer.h"
 
-#include <stdio.h>
-#include <string.h>
-
 // Create and initialize the state with dynamic stream handling
-lehmer_state_t* lehmer_create_state(size_t size, int64_t seed) {
+lehmer_state_t* lehmer_create_state(size_t size, uint64_t seed) {
     lehmer_state_t* state = (lehmer_state_t*) malloc(sizeof(lehmer_state_t));
-    state->seed           = (int64_t*) malloc(sizeof(int64_t) * size);
+    state->seed           = (uint64_t*) malloc(sizeof(uint64_t) * size);
     state->stream         = 0;
     state->size           = size;
     state->initialized    = false;
 
+    // Initialize all available streams and ensure seed is within MODULUS range
     for (size_t i = 0; i < size; i++) {
-        state->seed[i]  = (seed > 0 ? seed : ((int64_t) time(NULL))) + i * A256;
-        state->seed[i] %= MODULUS; // Ensure seed is within the modulus range
+        state->seed[i] = (((uint64_t) time(NULL)) + i * A256) % MODULUS;
     }
 
     return state;
@@ -46,7 +43,7 @@ void lehmer_free_state(lehmer_state_t* state) {
     }
 }
 
-void lehmer_set_seed(lehmer_state_t* state, int64_t value) {
+void lehmer_set_seed(lehmer_state_t* state, uint64_t value) {
     if (value > 0) {
         value = value % MODULUS; // Ensure seed is within the modulus range
     } else {
@@ -55,34 +52,31 @@ void lehmer_set_seed(lehmer_state_t* state, int64_t value) {
     state->seed[state->stream] = value;
 }
 
-int64_t lehmer_get_seed(lehmer_state_t* state) {
+uint64_t lehmer_get_seed(lehmer_state_t* state) {
     return state->seed[state->stream];
 }
 
+// Stream selection should not trigger seeding; assume streams are initialized.
 void lehmer_select_stream(lehmer_state_t* state, size_t stream) {
-    // Explicitly typecast stream to size_t (unsigned long)
-    state->stream = (size_t) (stream % STREAMS);
-    // Protect against uninitialized streams
-    if ((state->initialized == false) && (state->stream != 0)) {
-        // NOTE: Circular references are a red flag!
-        lehmer_seed_streams(state, DEFAULT); // This is not okay.
-    }
+    state->stream = stream % state->size;
 }
 
-void lehmer_seed_streams(lehmer_state_t* state, int64_t value) {
-    const int64_t quotient      = MODULUS / A256;
-    const int64_t remainder     = MODULUS % A256;
-    const size_t  stream_backup = state->stream;
+// Initialize the RNG state with seeds; decoupled from stream selection.
+void lehmer_seed_streams(lehmer_state_t* state, uint64_t value) {
+    const uint64_t quotient      = MODULUS / A256;
+    const uint64_t remainder     = MODULUS % A256;
+    const size_t   stream_backup = state->stream;
 
-    lehmer_select_stream(state, 0); // NOTE: Circular references are a red flag!
-    lehmer_set_seed(state, value);  // This is okay.
+    // Select and set the initial stream
+    lehmer_select_stream(state, 0);
+    lehmer_set_seed(state, value);
 
     state->stream = stream_backup;
 
-    // Initialize seeds for the remaining streams
-    for (size_t i = 1; i < state->size; i++) { // Changed STREAMS to state->size
-        int64_t new_seed = A256 * (state->seed[i - 1] % quotient)
-                           - remainder * (state->seed[i - 1] / quotient);
+    // Initialize remaining streams based on the first one
+    for (size_t i = 1; i < state->size; i++) {
+        uint64_t new_seed = A256 * (state->seed[i - 1] % quotient)
+                            - remainder * (state->seed[i - 1] / quotient);
 
         if (new_seed > 0) {
             state->seed[i] = new_seed;
@@ -96,9 +90,9 @@ void lehmer_seed_streams(lehmer_state_t* state, int64_t value) {
 
 // Generate the next random number
 double lehmer_generate(lehmer_state_t* state) {
-    const int64_t quotient  = MODULUS / MULTIPLIER;
-    const int64_t remainder = MODULUS % MULTIPLIER;
-    int64_t       new_seed;
+    const uint64_t quotient  = MODULUS / MULTIPLIER;
+    const uint64_t remainder = MODULUS % MULTIPLIER;
+    uint64_t       new_seed;
 
     new_seed = MULTIPLIER * (state->seed[state->stream] % quotient)
                - remainder * (state->seed[state->stream] / quotient);
