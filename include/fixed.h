@@ -1,6 +1,7 @@
-/*
-    fixed-point/include/fixed.h
-*/
+/**
+ * @file include/fixed.h
+ */
+
 #ifndef FIXED_H
 #define FIXED_H
 
