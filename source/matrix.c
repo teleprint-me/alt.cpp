@@ -73,6 +73,10 @@ void matrix_set_element(
     matrix->elements[row * matrix->columns + column] = value;
 }
 
+size_t matrix_elements(const matrix_t* matrix) {
+    return matrix->rows * matrix->columns;
+}
+
 bool matrix_is_zero(const matrix_t* matrix) {
     for (size_t i = 0; i < matrix->rows * matrix->columns; i++) {
         if (matrix->elements[i] != 0.0f) {

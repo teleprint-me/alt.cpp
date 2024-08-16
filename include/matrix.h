@@ -40,6 +40,8 @@ float matrix_get_element(
 void matrix_set_element(
     matrix_t* matrix, const size_t row, const size_t column, const float value
 );
+// total number of elements within the matrix
+size_t matrix_elements(const matrix_t* matrix);
 
 // Initialization Operations
 void matrix_fill(matrix_t* matrix, const float value);
