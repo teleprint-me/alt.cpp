@@ -18,7 +18,7 @@
 #include "lehmer.h"
 
 // Create and initialize the state with dynamic stream handling
-lehmer_state_t* lehmer_create_state(size_t size, uint64_t seed) {
+lehmer_state_t* lehmer_create_state(size_t size) {
     lehmer_state_t* state = (lehmer_state_t*) malloc(sizeof(lehmer_state_t));
     state->seed           = (uint64_t*) malloc(sizeof(uint64_t) * size);
     state->stream         = 0;

@@ -38,7 +38,7 @@ typedef struct LehmerState {
     bool      initialized; // True if RNG is initialized
 } lehmer_state_t;
 
-lehmer_state_t* lehmer_create_state(size_t size, uint64_t seed);
+lehmer_state_t* lehmer_create_state(size_t size);
 void            lehmer_free_state(lehmer_state_t* state);
 
 void     lehmer_set_seed(lehmer_state_t* state, uint64_t value);
