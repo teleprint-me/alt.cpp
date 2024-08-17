@@ -4,9 +4,13 @@
  * @file source/precision.c
  *
  * @brief A simple and easy-to-use API in C for handling various floating-point
- *        precisions, including 32-bit (float), 16-bit (half precision float:
- *        IEEE-754 & bfloat16), 16-bit Google Brain format, and extended 8-bit
- *        floats.
+ *        precisions.
+ *
+ * Supported floating-point precision formats are:
+ *   - 32-bit (float)
+ *   - 16-bit (IEEE-754 Half Precision)
+ *   - 16-bit (Google Brain Precision)
+ *   - 8-bit (Extended IEEE-754 Quarter Precision)
  *
  * Only pure C is used with minimal dependencies on external libraries.
  *
