@@ -3,20 +3,57 @@
  *
  * @file source/precision.c
  *
- * @brief A simple and easy-to-use API for handling precision in C
+ * @brief A simple and easy-to-use API in C for handling various floating-point
+ *        precisions, including 32-bit (float), 16-bit (half precision float:
+ *        IEEE-754 & bfloat16), 16-bit Google Brain format, and extended 8-bit
+ *        floats.
  *
  * Only pure C is used with minimal dependencies on external libraries.
+ *
+ * @note Official document
+ * @ref https://ieeexplore.ieee.org/document/8766229
+ *
+ * @note 3rd party work
+ * @ref shttps://geeksforgeeks.org/ieee-standard-754-floating-point-numbers/
+ *
+ * @note Source code
+ * @ref /usr/include/c10/util/half.h
+ * @ref https://github.com/Maratyszcza/FP16
+ * @ref https://github.com/pytorch/pytorch/blob/main/c10/util/Half.h
  */
 
 #include "../include/precision.h"
+
 #include <math.h>
 #include <stdint.h>
 
 // Determines if two floating-point values are approximately equal within
 // specified tolerances.
-bool float_is_close(float a, float b, float tolerance /*= FLOAT_TOLERANCE*/) {
-    return fabsf(a - b)
-           <= fmaxf(tolerance * fmaxf(fabsf(a), fabsf(b)), tolerance);
+bool float_is_close(double a, double b, int64_t significand) {
+    // Numbers are equal
+    if (a == b) {
+        return true;
+    }
+
+    // Arguments are not numbers
+    if (isinf(a) || isinf(b) || isnan(a) || isnan(b)) {
+        return false;
+    }
+
+    // Calculate the minimum tolerance based on the significand
+    double min_tolerance;
+    if (significand >= 0) {
+        min_tolerance = pow(10.0, -significand);
+    } else {
+        min_tolerance = pow(10.0, significand);
+    }
+
+    // Calculate the maximum tolerance based on the scale of the numbers
+    double max_tolerance = min_tolerance * fmax(fabs(a), fabs(b));
+
+    // Compare the absolute difference between the numbers within the tolerance
+    // range
+    return fabs(a - b) <= fmax(max_tolerance, min_tolerance);
 }
 
 // Function to encode a float into its IEEE-754 binary32 representation
@@ -38,13 +75,13 @@ float decode_float32(float32_t bits) {
  * 16-bit floating-point number in IEEE half-precision format, in bit
  * representation.
  */
-uint16_t encode_float16(float value) {
+float16_t encode_float16(float value) {
     // NOTE: ??? -> details and rationale unknown -> what and why
 
     // 32-bit Upper bound -> 0_1110_1111 -> 2_004_877_312
-    const float scale_to_inf  = decode_float(UINT32_C(0x77800000));
+    const float scale_to_inf  = decode_float32(UINT32_C(0x77800000));
     // 32-bit Lower bound -> 0_0001_0001 -> 142_606_336
-    const float scale_to_zero = decode_float(UINT32_C(0x08800000));
+    const float scale_to_zero = decode_float32(UINT32_C(0x08800000));
 
     // ???
     const float saturated_f = fabsf(value) * scale_to_inf;
@@ -52,7 +89,7 @@ uint16_t encode_float16(float value) {
     float       base        = saturated_f * scale_to_zero;
 
     // 32-bit encoded value
-    const uint32_t f      = encode_float(value);
+    const uint32_t f      = encode_float32(value);
     // shift the float value to the left by a multiple of 2
     // ???
     const uint32_t shl1_f = f + f;
@@ -68,9 +105,9 @@ uint16_t encode_float16(float value) {
 
     // the base is the lower half of the exponent
     // 0_0000_1111 -> 125_829_120
-    base = decode_float((bias >> 1) + UINT32_C(0x07800000)) + base;
+    base = decode_float32((bias >> 1) + UINT32_C(0x07800000)) + base;
     // get the bits for the base, e.g. 0_0000_1111
-    const uint32_t bits          = encode_float(base);
+    const uint32_t bits          = encode_float32(base);
     // 32-bit representation of a 16-bit shift of the exponent
     // 32-bit to 16-bit -> 0_1_1111_00_0000_0000 -> 31_744
     // 0 -> sign-bit, 1_1111 -> exponent bits, 00_0000_0000 -> mantissa bits
@@ -90,27 +127,27 @@ uint16_t encode_float16(float value) {
  * Convert a 16-bit floating-point number in IEEE half-precision format to a
  * 32-bit floating-point number in IEEE single-precision format.
  */
-float decode_float16(uint16_t bits) {
+float decode_float16(float16_t bits) {
     const uint32_t f      = (uint32_t) bits << 16;
     const uint32_t sign   = f & UINT32_C(0x80000000);
     const uint32_t shl1_f = f + f;
 
     const uint32_t exp_offset = UINT32_C(0xE0) << 23;
-    const float    exp_scale  = decode_float(UINT32_C(0x7800000));
+    const float    exp_scale  = decode_float32(UINT32_C(0x7800000));
     const float    normalized_value
-        = decode_float((shl1_f >> 4) + exp_offset) * exp_scale;
+        = decode_float32((shl1_f >> 4) + exp_offset) * exp_scale;
 
     const uint32_t magic_mask = UINT32_C(126) << 23;
     const float    magic_bias = 0.5f;
     const float    denormalized_value
-        = decode_float((shl1_f >> 17) | magic_mask) - magic_bias;
+        = decode_float32((shl1_f >> 17) | magic_mask) - magic_bias;
 
     const uint32_t denormalized_cutoff = UINT32_C(1) << 27;
     const uint32_t result
         = sign
-          | (shl1_f < denormalized_cutoff ? encode_float(denormalized_value)
-                                          : encode_float(normalized_value));
-    return decode_float(result);
+          | (shl1_f < denormalized_cutoff ? encode_float32(denormalized_value)
+                                          : encode_float32(normalized_value));
+    return decode_float32(result);
 }
 
 bfloat16_t encode_bfloat16(float value) {
@@ -164,56 +201,59 @@ float decode_bfloat16(bfloat16_t bits) {
     return decode_float32(result);
 }
 
-// Convert a 32-bit floating-point number to a 8-bit floating-point number
+// Convert a 32-bit floating-point number to an 8-bit floating-point number
 float8_t encode_float8(float value) {
-    // TODO: This is not right, but uses 16-bit conversion as a guide
-    uint32_t f = encode_float32(value);
+    // TODO: Implement correct conversion logic
+    float32_t f = encode_float32(value);
 
-    uint32_t sign     = (f >> 16) & 0x8000;
-    uint32_t exponent = ((f >> 23) & 0xFF) - 127 + 15;
-    uint32_t mantissa = (f & 0x007FFFFF) >> 13;
+    uint32_t  sign     = (f >> 7) & 0x1;
+    float32_t exponent = ((f >> 23) & 0xFF) - 127 + 3; // Adjust exponent bias
+    float32_t mantissa
+        = (f >> 19) & 0x0F; // Extract the 4 most significant bits
 
     if (exponent <= 0) {
-        if (exponent < -10) {
-            return 0;
+        // Handle subnormal numbers
+        if (exponent < -3) {
+            return sign << 7; // Return signed zero
         }
-        mantissa   = (f & 0x007FFFFF) | 0x00800000;
-        mantissa >>= (1 - exponent);
-        return sign | (mantissa >> 13);
-    } else if (exponent == 0xFF - (127 - 15)) {
-        if (mantissa) {
-            return sign | 0x7E00; // NaN
-        } else {
-            return sign | 0x7C00; // Infinity
-        }
-    } else if (exponent > 30) {
-        return sign | 0x7C00; // Infinity
+        mantissa  |= 0x10;                      // Restore implicit bit
+        mantissa >>= (1 - exponent);            // Adjust mantissa
+        return (sign << 7) | (mantissa & 0x7F); // Assemble bits
+    } else if (exponent >= 7) {
+        // Handle overflow to infinity
+        return (sign << 7) | 0x78; // Infinity
+    } else {
+        // Normalized number
+        return (sign << 7) | (exponent << 4) | mantissa;
     }
-
-    return sign | (exponent << 10) | mantissa;
 }
 
-// Convert a 16-bit floating-point number to a 8-bit floating-point number
+// Convert an 8-bit floating-point number to a 32-bit floating-point number
 float decode_float8(float8_t bits) {
-    // TODO: This is not right, but uses 16-bit conversion as a guide
-    uint32_t sign     = (bits & 0x8000) << 16;
-    uint32_t exponent = (bits & 0x7C00) >> 10;
-    uint32_t mantissa = (bits & 0x03FF) << 13;
+    // TODO: Implement correct conversion logic
+    float32_t sign     = (bits >> 7) & 0x1;
+    float32_t exponent = (bits >> 4) & 0x07;
+    float32_t mantissa = bits & 0x0F;
 
     if (exponent == 0) {
         if (mantissa == 0) {
-            return sign ? -0.0f : 0.0f;
+            return sign ? -0.0f : 0.0f; // Signed zero
         }
-        while (!(mantissa & 0x00800000)) {
-            mantissa <<= 1;
-            exponent--;
+        // Subnormal number
+        exponent = 1 - 3;
+        return decode_float32(
+            (sign << 31) | (exponent << 23) | (mantissa << 19)
+        );
+    } else if (exponent == 7) {
+        // Infinity or NaN
+        if (mantissa == 0) {
+            return sign ? -INFINITY : INFINITY;
+        } else {
+            return NAN; // Not a number
         }
-        exponent++;
-        mantissa &= ~0x00800000;
-    } else if (exponent == 0x1F) {
-        return sign | (mantissa ? 0x7FC00000 : 0x7F800000);
     }
 
-    exponent = exponent + (127 - 15);
-    return decode_float32(sign | (exponent << 23) | mantissa);
+    // Normalized number
+    exponent = exponent - 3 + 127;
+    return decode_float32((sign << 31) | (exponent << 23) | (mantissa << 19));
 }
